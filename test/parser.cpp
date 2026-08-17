@@ -8,7 +8,7 @@
 
 int main() {
     try {
-        std::string sampleFilePath = std::string(SAMPLE_DIR) + "/sample.mp3";
+        std::string sampleFilePath = std::string(SAMPLE_DIR) + "/sample.flac";
         AudioBuffer audio = loadAudioFile(sampleFilePath);
         
         std::cout << "--- Audio Loaded Successfully ---\n";

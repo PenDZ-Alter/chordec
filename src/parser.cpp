@@ -16,12 +16,12 @@ AudioBuffer loadAudioFile(const std::string& filePath) {
     // Try decode to WAV first
     pSampleData = drwav_open_file_and_read_pcm_frames_f32(filePath.c_str(), &channels, &sampleRate, &totalFrameCount, NULL);
 
-    // if not, try decode as FLAC
+    // if not, try decode to FLAC
     if (!pSampleData) {
         pSampleData = drflac_open_file_and_read_pcm_frames_f32(filePath.c_str(), &channels, &sampleRate, &totalFrameCount, NULL);
     }
 
-    // if not, try decode as MP3
+    // if not, try decode to MP3
     if (!pSampleData) {
         drmp3_config config;
         pSampleData = drmp3_open_file_and_read_pcm_frames_f32(filePath.c_str(), &config, &totalFrameCount, NULL);
