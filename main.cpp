@@ -93,7 +93,7 @@ int main(int argc, char* argv[]) {
         }
 
         // Shown Chromagram result from extracted song
-        const char* noteNames[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+        const char* noteNames[] = {"C", "C#", "D", "D#/Eb", "E", "F", "F#", "G", "G#/Ab", "A", "A#/Bb", "B"};
         std::cout << "--- Accumulated Pitch Class Energy (" << processedFrames << " frames) ---\n";
         
         // Find the note with the most dominant
