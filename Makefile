@@ -11,25 +11,25 @@ TEST_SRC  := test/parser.cpp
 # Executables Target
 TEST_BIN  := $(BUILD_DIR)/test_runner
 
-# Macro buat ngasih tau Absolute Path root project ke C++
+# Macro for path
 PWD_DIR   := $(shell pwd)
 TEST_FLAGS := -DSAMPLE_DIR=\"$(PWD_DIR)\"
 
-# Target Default (kalau cuma ngetik 'make')
+# Target Default
 all: test
 
-# Rule untuk nge-build & running test
+# Rules to build and running test
 test: $(TEST_BIN)
 	@echo "== [RUNNING TESTS] =="
 	@./$(TEST_BIN)
 
-# Linker untuk binary test
+# Linker for binary test
 $(TEST_BIN): $(SRC_FILES) $(TEST_SRC)
 	@mkdir -p $(BUILD_DIR)
 	@echo "== [BUILDING TEST BINARY] =="
 	$(CXX) $(CXXFLAGS) $(TEST_FLAGS) $^ -o $@
 
-# Bersihin file build
+# Clean build directory
 clean:
 	@echo "== [CLEANING BUILD DIR] =="
 	rm -rf $(BUILD_DIR)

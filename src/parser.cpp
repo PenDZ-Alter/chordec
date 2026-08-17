@@ -6,11 +6,6 @@
 
 #include "parser.h"
 
-/**
- * Loads an audio file and returns its data in a normalized format.
- * @param filePath Path to the audio file.
- * @return AudioBuffer containing the audio data.
- */
 AudioBuffer loadAudioFile(const std::string& filePath) {
     AudioBuffer audio;
     float* pSampleData = nullptr;

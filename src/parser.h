@@ -1,3 +1,6 @@
+#ifndef PARSER_H
+#define PARSER_H
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -23,3 +26,12 @@ struct AudioBuffer {
     uint32_t channels;
     std::vector<double> samples; // Normalized (-1.0 to 1.0)
 };
+
+/**
+ * Loads an audio file and returns its data in a normalized format.
+ * @param filePath Path to the audio file.
+ * @return AudioBuffer containing the audio data.
+ */
+AudioBuffer loadAudioFile(const std::string& filePath);
+
+#endif
