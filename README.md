@@ -1,5 +1,11 @@
 # Chordec
 
+> [!NOTE]
+> This is unfinished project, and will release soon 😁
+
+A program to detect any chords on music
+
+
 ## Build Information
 
 - Using make : 
