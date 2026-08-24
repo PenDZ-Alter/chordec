@@ -16,8 +16,16 @@ make test
 
 - Using cmake : 
 
-```bash
-mkdir build && cd build
-cmake .. -DBUILD_TESTS=ON
-cmake --build .
-```
+    - For testing
+    ```bash
+    mkdir build && cd build
+    cmake .. -DBUILD_TESTS=ON
+    cmake --build .
+    ```
+
+    - For main
+    ```bash
+    mkdir build && cd build
+    cmake .. -DBUILD_MAIN=ON
+    cmake --build .
+    ```
