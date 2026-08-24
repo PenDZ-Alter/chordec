@@ -18,6 +18,6 @@ make test
 
 ```bash
 mkdir build && cd build
-cmake ..
+cmake .. -DBUILD_TESTS=ON
 cmake --build .
 ```
