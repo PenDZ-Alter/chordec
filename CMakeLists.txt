@@ -11,7 +11,7 @@ if (BUILD_MAIN AND BUILD_TESTS)
     message(FATAL_ERROR "Cannot build both main and tests at the same time.")
 endif()
 
-if (!BUILD_MAIN AND !BUILD_TESTS)
+if (NOT BUILD_MAIN AND NOT BUILD_TESTS)
     message(FATAL_ERROR "Must build either main or tests.")
 endif()
 
