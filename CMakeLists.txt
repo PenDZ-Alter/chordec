@@ -21,9 +21,9 @@ add_compile_definitions(SAMPLE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 include_directories(src src/parser)
 
 # Create static library
-add_library(audio_parser src/parser.cpp)
-add_library(chord_generator src/chord.cpp)
-add_library(math_utils src/math.cpp)
+add_library(chordec_parser src/parser.cpp)
+add_library(chordec_gen src/chord.cpp)
+add_library(chordec_math src/math.cpp)
 
 if (BUILD_MAIN)
     # Create executable
