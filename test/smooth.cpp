@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "src/parser.cpp"
-#include "src/chord.cpp"
-#include "src/math.cpp"
-#include "src/params.h"
+#include "../src/parser.cpp"
+#include "../src/chord.cpp"
+#include "../src/math.cpp"
+#include "../src/params.h"
 
 int main(int argc, char* argv[]) 
 {

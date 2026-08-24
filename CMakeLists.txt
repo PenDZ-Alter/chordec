@@ -22,10 +22,12 @@ include_directories(src src/parser)
 
 # Create static library
 add_library(audio_parser src/parser.cpp)
+add_library(chord_generator src/chord.cpp)
+add_library(math_utils src/math.cpp)
 
 if (BUILD_MAIN)
     # Create executable
-    add_executable(audio_main main.cpp)
+    add_executable(chordec main.cpp)
 endif()
 
 
@@ -49,5 +51,6 @@ if (BUILD_TESTS)
 
     # Call function for testing
     add_audio_test(test_parser test/parser.cpp)
-    add_audio_test(test_main main.cpp)
+    add_audio_test(test_unsmooth test/unsmooth.cpp)
+    add_audio_test(test_smooth test/smooth.cpp)
 endif()
