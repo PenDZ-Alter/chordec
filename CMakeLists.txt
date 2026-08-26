@@ -42,8 +42,8 @@ if (BUILD_TESTS)
         # 1. Build executable
         add_executable(${TEST_NAME} ${TEST_SRC})
         
-        # 2. Link with the audio_parser library
-        target_link_libraries(${TEST_NAME} PRIVATE audio_parser)
+        # 2. Link with the chordec_parser library
+        target_link_libraries(${TEST_NAME} PRIVATE chordec_parser)
         
         # 3. Register to CTest
         add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
