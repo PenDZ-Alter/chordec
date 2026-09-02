@@ -6,7 +6,8 @@
 
 #include "parser.h"
 
-AudioBuffer loadAudioFile(const std::string& filePath) {
+AudioBuffer loadAudioFile(const std::string& filePath) 
+{
     AudioBuffer audio;
     float* pSampleData = nullptr;
     unsigned int channels = 0;
@@ -42,7 +43,8 @@ AudioBuffer loadAudioFile(const std::string& filePath) {
             format = AudioFormat::MP3;
         }
     } 
-    else {
+    else 
+    {
         throw std::runtime_error("Unsupported file format: " + extension);
     }
 
@@ -51,10 +53,14 @@ AudioBuffer loadAudioFile(const std::string& filePath) {
     audio.samples.reserve(totalFrameCount);
 
     // Downmix Stereo to Mono & copy to vector<double>
-    for (drwav_uint64 i = 0; i < totalFrameCount; ++i) {
-        if (channels == 1) {
+    for (uint64_t i = 0; i < totalFrameCount; ++i) 
+    {
+        if (channels == 1) 
+        {
             audio.samples.push_back(pSampleData[i]);
-        } else {
+        } 
+        else 
+        {
             // Average left and right channels for stereo
             float left = pSampleData[i * channels];
             float right = pSampleData[i * channels + 1];
