@@ -28,6 +28,17 @@ struct AudioBuffer {
 };
 
 /**
+ * Enum to represent supported audio formats.
+ * Used for determining which decoder to use when loading audio files.
+ */
+enum AudioFormat {
+    WAV,
+    FLAC,
+    MP3,
+    UNKNOWN
+};
+
+/**
  * Loads an audio file and returns its data in a normalized format.
  * @param filePath Path to the audio file.
  * @return AudioBuffer containing the audio data.

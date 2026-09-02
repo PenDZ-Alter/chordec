@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
         const size_t HOP_SIZE = 2048; // Overlap (~0.04s per hop in 48kHz)
         
         // Size of buffer smoothing: 25 frame (~1 second window duration)
-        const size_t SMOOTHING_WINDOW_SIZE = 25;
+        const size_t SMOOTHING_WINDOW_SIZE = 150;
         std::vector<std::string> chordHistory;
 
         size_t totalSamples = audio.samples.size();
