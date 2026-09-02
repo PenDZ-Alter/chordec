@@ -18,16 +18,6 @@
 #include "dr_mp3.h"
 
 /**
- * Struct to hold audio data after loading from a file.
- * Contains sample rate, number of channels, and normalized samples.
- */
-struct AudioBuffer {
-    uint32_t sampleRate;
-    uint32_t channels;
-    std::vector<double> samples; // Normalized (-1.0 to 1.0)
-};
-
-/**
  * Enum to represent supported audio formats.
  * Used for determining which decoder to use when loading audio files.
  */
@@ -36,6 +26,17 @@ enum AudioFormat {
     FLAC,
     MP3,
     UNKNOWN
+};
+
+/**
+ * Struct to hold audio data after loading from a file.
+ * Contains sample rate, number of channels, and normalized samples.
+ */
+struct AudioBuffer {
+    uint32_t sampleRate;
+    uint32_t channels;
+    std::vector<double> samples; // Normalized (-1.0 to 1.0)
+    AudioFormat format;
 };
 
 /**

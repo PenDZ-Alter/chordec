@@ -51,6 +51,7 @@ AudioBuffer loadAudioFile(const std::string& filePath)
     audio.sampleRate = sampleRate;
     audio.channels = channels;
     audio.samples.reserve(totalFrameCount);
+    audio.format = format;
 
     // Downmix Stereo to Mono & copy to vector<double>
     for (uint64_t i = 0; i < totalFrameCount; ++i) 
