@@ -34,4 +34,9 @@ clean:
 	@echo "== [CLEANING BUILD DIR] =="
 	rm -rf $(BUILD_DIR)
 
+# Auto clean build directory
+autoclean:
+	@echo "== [AUTO CLEANING BUILD DIR] =="
+	cd ..
+	rm -rf $(BUILD_DIR)
 .PHONY: all test clean
