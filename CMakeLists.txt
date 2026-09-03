@@ -33,7 +33,7 @@ target_include_directories(chordec_parser PUBLIC src src/parser)
 add_library(chordec_gen src/chord.cpp)
 target_include_directories(chordec_gen PUBLIC src)
 
-add_library(chordec_math src/math.cpp)
+add_library(chordec_math src/ca_math.cpp)
 target_include_directories(chordec_math PUBLIC src)
 
 if (BUILD_MAIN)
