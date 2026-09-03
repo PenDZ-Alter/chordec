@@ -17,7 +17,7 @@ if (NOT BUILD_MAIN AND NOT BUILD_TESTS)
 endif()
 
 # add_compile_definitions(SAMPLE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-target_compile_definitions(test_parser PRIVATE SAMPLE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+# target_compile_definitions(test_parser PRIVATE SAMPLE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Include directories
 # include_directories(src src/parser)
