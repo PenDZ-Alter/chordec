@@ -29,3 +29,10 @@ make test
     cmake .. -DBUILD_MAIN=ON
     cmake --build .
     ```
+
+    - With shared libraries
+    ```bash
+    mkdir build && cd build
+    cmake .. -DBUILS_SHARED_LIBS=ON -DBUILS_MAIN=ON
+    cmake --build .
+    ```
