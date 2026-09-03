@@ -1,11 +1,11 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <stdexcept>
-#include <cstdint>
 
 // Define dr_libs
 #include "dr_wav.h"

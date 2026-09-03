@@ -1,10 +1,10 @@
+#include <cstdint>
+#include <cctype>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <stdexcept>
-#include <cstdint>
 #include <algorithm>
-#include <cctype>
 
 #define DR_WAV_IMPLEMENTATION
 #include "dr_wav.h"
