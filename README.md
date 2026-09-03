@@ -33,6 +33,6 @@ make test
     - With shared libraries
     ```bash
     mkdir build && cd build
-    cmake .. -DBUILS_SHARED_LIBS=ON -DBUILS_MAIN=ON
+    cmake .. -DBUILD_SHARED_LIBS=ON -DBUILD_MAIN=ON
     cmake --build .
     ```
