@@ -1,21 +1,18 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <stdexcept>
-#include <cstdint>
 
-// Define dr_libs implementations
-#define DR_WAV_IMPLEMENTATION
+// Define dr_libs
 #include "dr_wav.h"
-
-#define DR_FLAC_IMPLEMENTATION
 #include "dr_flac.h"
-
-#define DR_MP3_IMPLEMENTATION
 #include "dr_mp3.h"
+
+#include "api.h"
 
 /**
  * Enum to represent supported audio formats.
@@ -32,7 +29,7 @@ enum AudioFormat {
  * Struct to hold audio data after loading from a file.
  * Contains sample rate, number of channels, and normalized samples.
  */
-struct AudioBuffer {
+struct CHORDEC_API AudioBuffer {
     uint32_t sampleRate;
     uint32_t channels;
     std::vector<double> samples; // Normalized (-1.0 to 1.0)
@@ -44,6 +41,6 @@ struct AudioBuffer {
  * @param filePath Path to the audio file.
  * @return AudioBuffer containing the audio data.
  */
-AudioBuffer loadAudioFile(const std::string& filePath);
+CHORDEC_API AudioBuffer loadAudioFile(const std::string& filePath);
 
 #endif

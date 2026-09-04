@@ -2,18 +2,19 @@
 
 #include "src/parser.cpp"
 #include "src/chord.cpp"
-#include "src/math.cpp"
+#include "src/ca_math.cpp"
 #include "src/params.h"
 
 int main(int argc, char* argv[]) 
 {
     std::string file;
-    std::string currentFilePath = (argc > 1) ? argv[1] : std::string(SAMPLE_DIR);
+    // std::string currentFilePath = (argc > 1) ? argv[1] : std::string(SAMPLE_DIR);
+    std::string currentFilePath = (argc > 1) ? argv[1] : "";
 
     std::cout << "Current Directory: " << currentFilePath << std::endl;
     std::cout << "Enter File name (Based on current directory): ";
     getline(std::cin, file);
-
+    
     std::string filePath = currentFilePath + file;
 
     AudioBuffer audio;
@@ -34,6 +35,7 @@ int main(int argc, char* argv[])
     catch (const std::exception& e) 
     {
         std::cerr << "Error: " << e.what() << "\n";
+        return 1;
     }
 
     std::cout << "Enter FFT Size (e.g., 8192): ";
