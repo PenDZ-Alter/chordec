@@ -16,6 +16,10 @@ if (NOT BUILD_MAIN AND NOT BUILD_TESTS)
     message(FATAL_ERROR "Must build either main or tests.")
 endif()
 
+if (NOT BUILD_SHARED_LIBS)
+    add_compile_definitions(CHORDEC_STATIC_BUILD)
+endif()
+
 # add_compile_definitions(SAMPLE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 # target_compile_definitions(test_parser PRIVATE SAMPLE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
