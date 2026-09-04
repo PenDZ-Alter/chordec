@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(Chordec CXX)
+project(Chordec VERSION 0.1.0 LANGUAGES C CXX)
 
 option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_MAIN "Build main" OFF)
@@ -11,6 +11,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Hide symbol as default if using shared libraries (Best Practice)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN YES)
+
+# Putting output directories based on configuration (MSVC)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+# Synchronize path for it's all configurations (Debug, Release, dll.)
+foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/bin)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
+endforeach()
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/generated/version.h"
+)
+
+# Tambahkan folder generated ke include path biar bisa di-#include
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 if (NOT BUILD_MAIN AND NOT BUILD_TESTS)
     message(FATAL_ERROR "Must build either main or tests.")
@@ -40,9 +61,12 @@ target_include_directories(chordec_gen PUBLIC src)
 add_library(chordec_math src/ca_math.cpp)
 target_include_directories(chordec_math PUBLIC src)
 
+add_library(chordec_info src/info.cpp)
+target_include_directories(chordec_info PUBLIC src)
+
 if (BUILD_MAIN)
     add_executable(chordec main.cpp)
-    target_link_libraries(chordec PRIVATE chordec_parser chordec_gen chordec_math)
+    target_link_libraries(chordec PRIVATE chordec_parser chordec_gen chordec_math chordec_info)
 endif()
 
 if (BUILD_TESTS)
@@ -57,7 +81,7 @@ if (BUILD_TESTS)
         add_executable(${TEST_NAME} ${TEST_SRC})
         
         # 2. Link with the chordec_parser library
-        target_link_libraries(${TEST_NAME} PRIVATE chordec_parser chordec_gen chordec_math)
+        target_link_libraries(${TEST_NAME} PRIVATE chordec_parser chordec_gen chordec_math chordec_info)
         target_compile_definitions(${TEST_NAME} PRIVATE SAMPLE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
         
         # 3. Register to CTest

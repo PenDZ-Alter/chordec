@@ -4,9 +4,25 @@
 #include "src/chord.cpp"
 #include "src/ca_math.cpp"
 #include "src/params.h"
+#include "src/info.cpp"
+
+#include "version.h"
 
 int main(int argc, char* argv[]) 
 {
+    for (int i = 1; i < argc; ++i) {
+        std::string_view arg = argv[i];
+        
+        if (arg == "-v" || arg == "--version") {
+            printVersion();
+            return 0;
+        } 
+        else if (arg == "-h" || arg == "--help") {
+            printHelp();
+            return 0;
+        }
+    }
+
     std::string file;
     // std::string currentFilePath = (argc > 1) ? argv[1] : std::string(SAMPLE_DIR);
     std::string currentFilePath = (argc > 1) ? argv[1] : "";
