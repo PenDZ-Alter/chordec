@@ -15,7 +15,7 @@
 #define DR_MP3_IMPLEMENTATION
 #include "dr_mp3.h"
 
-#include "parser.h"
+#include "headers/parser.h"
 
 AudioBuffer loadAudioFile(const std::string& filePath) 
 {

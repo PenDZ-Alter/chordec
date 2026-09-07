@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <map>
 
-#include "chord.h"
-#include "params.h"
+#include "headers/chord.h"
+#include "headers/params.h"
 
 int freqToPitchClass(double freq) 
 {

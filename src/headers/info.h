@@ -1,7 +1,7 @@
 #ifndef INFO_H
 #define INFO_H
 
-#include "api.h"
+#include "libs/api.h"
 
 /**
  * Print the version information of the Chordec project

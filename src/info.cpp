@@ -2,7 +2,7 @@
 #include <string_view>
 #include "version.h"
 
-#include "info.h"
+#include "headers/info.h"
 
 void printVersion() {
     std::cout << PROJECT_NAME << " v" << PROJECT_VERSION << std::endl;

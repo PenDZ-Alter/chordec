@@ -12,7 +12,7 @@
 #include "dr_flac.h"
 #include "dr_mp3.h"
 
-#include "api.h"
+#include "libs/api.h"
 
 /**
  * Enum to represent supported audio formats.

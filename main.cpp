@@ -3,7 +3,7 @@
 #include "src/parser.cpp"
 #include "src/chord.cpp"
 #include "src/ca_math.cpp"
-#include "src/params.h"
+#include "src/headers/params.h"
 #include "src/info.cpp"
 
 #include "version.h"

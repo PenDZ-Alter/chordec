@@ -26,7 +26,7 @@ foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
 endforeach()
 
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/version.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/version.h"
 )
 
