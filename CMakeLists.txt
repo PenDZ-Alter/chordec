@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(Chordec VERSION 0.1.0 LANGUAGES C CXX)
+project(Chordec VERSION 0.2.1 LANGUAGES C CXX)
 
 option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_MAIN "Build main" OFF)

@@ -10,6 +10,19 @@
 
 int main(int argc, char* argv[]) 
 {
+    std::string file;
+    // std::string currentFilePath = (argc > 1) ? argv[1] : std::string(SAMPLE_DIR);
+    // std::string currentFilePath = (argc > 1) ? argv[1] : "";
+
+    // std::string filePath = file;
+
+    AudioBuffer audio;
+    size_t FFT_SIZE = 8192;
+    size_t HOP_SIZE;
+    size_t SMOOTHING_WINDOW_SIZE = 25;
+    bool usingChromaOptimization = false;
+
+    // Loop through arguments
     for (int i = 1; i < argc; ++i) {
         std::string_view arg = argv[i];
         
@@ -20,26 +33,50 @@ int main(int argc, char* argv[])
         else if (arg == "-h" || arg == "--help") {
             printHelp();
             return 0;
+        } 
+        else if (arg.rfind("--path=", 0) == 0) {
+            std::string_view path = arg.substr(7);
+            file = std::string(path);
+            std::cout << "File: " << file << std::endl;
+        } 
+        else if (arg.rfind("-p=", 0) == 0) {
+            std::string_view path = arg.substr(3);
+            file = std::string(path);
+        } 
+        else if (arg.rfind("--fft-size=", 0) == 0) {
+            std::string_view sizeStr = arg.substr(11);
+            FFT_SIZE = std::stoul(std::string(sizeStr));
+        } 
+        else if (arg.rfind("--use-chroma", 0) == 0) {
+            usingChromaOptimization = true;
+        } 
+        else if (arg.rfind("-swz=", 0) == 0) {
+            std::string_view sizeStr = arg.substr(5);
+            SMOOTHING_WINDOW_SIZE = std::stoul(std::string(sizeStr));
+        }
+        else {
+            std::cerr << "Unknown option: " << arg << "\n";
+            printHelp();
+            return 1;
         }
     }
 
-    std::string file;
-    // std::string currentFilePath = (argc > 1) ? argv[1] : std::string(SAMPLE_DIR);
-    std::string currentFilePath = (argc > 1) ? argv[1] : "";
+    if (file.empty()) 
+    {
+        std::cerr << "Error: No audio file specified. Use --path=<file> or -p=<file> to specify the audio file.\n";
+        printHelp();
+        return 1;
+    }
 
-    std::cout << "Current Directory: " << currentFilePath << std::endl;
-    std::cout << "Enter File name (Based on current directory): ";
-    getline(std::cin, file);
-    
-    std::string filePath = currentFilePath + file;
+    HOP_SIZE = FFT_SIZE / 4; // Overlap (~0.04s per hop in 48kHz)
 
-    AudioBuffer audio;
-    size_t FFT_SIZE;
-    size_t HOP_SIZE;
+    // std::cout << "Current Directory: " << currentFilePath << std::endl;
+    // std::cout << "Enter File name (Based on current directory): ";
+    // getline(std::cin, file);
 
     try
     {
-        audio = loadAudioFile(filePath);
+        audio = loadAudioFile(file);
 
         std::cout << "--- Audio Loaded Successfully ---\n";
         std::cout << "Sample Rate : " << audio.sampleRate << " Hz\n";
@@ -47,6 +84,11 @@ int main(int argc, char* argv[])
         std::cout << "Total Sample: " << audio.samples.size() << " frame\n";
         std::cout << "Duration    : " << static_cast<double>(audio.samples.size()) / audio.sampleRate << " seconds\n";
         std::cout << "Format      : " << (audio.format == AudioFormat::WAV ? "WAV" : (audio.format == AudioFormat::FLAC ? "FLAC" : (audio.format == AudioFormat::MP3 ? "MP3" : "UNKNOWN"))) << "\n";
+        std::cout << "FFT Size    : " << FFT_SIZE << "\n";
+        std::cout << "HOP Size    : " << HOP_SIZE << "\n";
+        std::cout << "Smoothing Window Size: " << SMOOTHING_WINDOW_SIZE << "\n";
+        std::cout << "Using Chroma Optimization: "<< (usingChromaOptimization ? "Yes" : "No") << "\n";
+        std::cout << "---------------------------------\n";
     } 
     catch (const std::exception& e) 
     {
@@ -54,27 +96,21 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::cout << "Enter FFT Size (e.g., 8192): ";
-    std::cin >> FFT_SIZE;
-    
-    HOP_SIZE = FFT_SIZE / 4; // Overlap (~0.04s per hop in 48kHz)
+    // std::cout << "Enter FFT Size (e.g., 8192): ";
+    // std::cin >> FFT_SIZE;
 
-    size_t SMOOTHING_WINDOW_SIZE;
+    // std::cout << "Enter Smoothing Window Size (e.g., 150): ";
+    // std::cin >> SMOOTHING_WINDOW_SIZE;
+    // char optimizationChoice;
 
-    std::cout << "Enter Smoothing Window Size (e.g., 150): ";
-    std::cin >> SMOOTHING_WINDOW_SIZE;
-
-    bool usingChromaOptimization = false;
-    char optimizationChoice;
-
-    std::cout << "Use Chroma Optimization? (y/n): ";
-    std::cin >> optimizationChoice;
-    if (optimizationChoice == 'y' || optimizationChoice == 'Y') {
-        usingChromaOptimization = true;
-        std::cout << "Chroma Optimization Enabled.\n";
-    } else {
-        std::cout << "Chroma Optimization Disabled.\n";
-    }
+    // std::cout << "Use Chroma Optimization? (y/n): ";
+    // std::cin >> optimizationChoice;
+    // if (optimizationChoice == 'y' || optimizationChoice == 'Y') {
+    //     usingChromaOptimization = true;
+    //     std::cout << "Chroma Optimization Enabled.\n";
+    // } else {
+    //     std::cout << "Chroma Optimization Disabled.\n";
+    // }
 
     try 
     {
