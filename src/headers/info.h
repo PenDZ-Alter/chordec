@@ -1,13 +1,13 @@
 #ifndef INFO_H
 #define INFO_H
 
-#include "api.h"
+#include "libs/api.h"
 
 /**
  * Print the version information of the Chordec project
  * This function outputs the project name and version to the standard output.
  */
-void printVersion();
+CHORDEC_API void printVersion();
 
 /**
  * Print the help message for the Chordec project

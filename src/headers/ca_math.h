@@ -6,13 +6,13 @@
 #include <complex>
 
 #include "params.h"
-#include "api.h"
+#include "libs/api.h"
 
 /**
  * Fast-Fourier Transform
  * @param <vector> size of frequency
  */
-void fft(std::vector<Complex>& x);
+static void fft(std::vector<Complex>& x);
 
 /**
  * Calculate Cosine Similarity between two vectors

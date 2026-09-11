@@ -1,6 +1,6 @@
-#include "ca_math.h"
+#include "headers/ca_math.h"
 
-void fft(std::vector<Complex>& x) 
+static void fft(std::vector<Complex>& x) 
 {
     size_t N = x.size();
     if (N <= 1) return;
