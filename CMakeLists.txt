@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(Chordec VERSION 0.2.1 LANGUAGES C CXX)
+project(Chordec VERSION 0.2.2 LANGUAGES C CXX)
 
 option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_MAIN "Build main" OFF)
@@ -93,4 +93,5 @@ if (BUILD_TESTS)
     add_audio_test(test_unsmooth test/unsmooth.cpp)
     add_audio_test(test_smooth test/smooth.cpp)
     add_audio_test(test_chroma test/chroma.cpp)
+    add_audio_test(test_weighted_7th test/weighted_7th.cpp)
 endif()

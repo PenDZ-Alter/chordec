@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
     size_t HOP_SIZE;
     size_t SMOOTHING_WINDOW_SIZE = 25;
     bool usingChromaOptimization = false;
+    bool usingWeightedTemplates = false;
 
     // Loop through arguments
     for (int i = 1; i < argc; ++i) {
@@ -50,6 +51,9 @@ int main(int argc, char* argv[])
         else if (arg.rfind("--use-chroma", 0) == 0) {
             usingChromaOptimization = true;
         } 
+        else if (arg.rfind("--use-weighted", 0) == 0) {
+            usingWeightedTemplates = true;
+        }
         else if (arg.rfind("-swz=", 0) == 0) {
             std::string_view sizeStr = arg.substr(5);
             SMOOTHING_WINDOW_SIZE = std::stoul(std::string(sizeStr));
@@ -88,6 +92,7 @@ int main(int argc, char* argv[])
         std::cout << "HOP Size    : " << HOP_SIZE << "\n";
         std::cout << "Smoothing Window Size: " << SMOOTHING_WINDOW_SIZE << "\n";
         std::cout << "Using Chroma Optimization: "<< (usingChromaOptimization ? "Yes" : "No") << "\n";
+        std::cout << "Using Weighted 7th Chord Templates: "<< (usingWeightedTemplates ? "Yes" : "No") << "\n";
         std::cout << "---------------------------------\n";
     } 
     catch (const std::exception& e) 
@@ -114,7 +119,7 @@ int main(int argc, char* argv[])
 
     try 
     {
-        auto chordTemplates = generateChordTemplates();
+        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(0.6) : generateChordTemplates();
 
         // const size_t FFT_SIZE = 8192;
         // const size_t HOP_SIZE = 2048; // Overlap (~0.04s per hop in 48kHz)
