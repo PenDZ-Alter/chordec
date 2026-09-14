@@ -20,6 +20,7 @@ int main(int argc, char* argv[])
     size_t FFT_SIZE = 8192;
     size_t HOP_SIZE;
     size_t SMOOTHING_WINDOW_SIZE = 25;
+    double weighted7thSize = 0.6;
     bool usingChromaOptimization = false;
     bool usingWeightedTemplates = false;
 
@@ -53,6 +54,24 @@ int main(int argc, char* argv[])
         } 
         else if (arg.rfind("--use-weighted", 0) == 0) {
             usingWeightedTemplates = true;
+        }
+        else if (arg.rfind("--weight=", 0) == 0) {
+            std::string_view weightStr = arg.substr(9);
+            double weightValue = std::stod(std::string(weightStr));
+            if (weightValue < 0.0 || weightValue > 1.0) {
+                std::cerr << "Error: Weight value must be between 0.0 and 1.0\n";
+                return 1;
+            }
+            weighted7thSize = weightValue;
+        }
+        else if (arg.rfind("-w=", 0) == 0) {
+            std::string_view weightStr = arg.substr(3);
+            double weightValue = std::stod(std::string(weightStr));
+            if (weightValue < 0.0 || weightValue > 1.0) {
+                std::cerr << "Error: Weight value must be between 0.0 and 1.0\n";
+                return 1;
+            }
+            weighted7thSize = weightValue;
         }
         else if (arg.rfind("-swz=", 0) == 0) {
             std::string_view sizeStr = arg.substr(5);
@@ -119,7 +138,7 @@ int main(int argc, char* argv[])
 
     try 
     {
-        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(0.6) : generateChordTemplates();
+        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(weighted7thSize) : generateChordTemplates();
 
         // const size_t FFT_SIZE = 8192;
         // const size_t HOP_SIZE = 2048; // Overlap (~0.04s per hop in 48kHz)

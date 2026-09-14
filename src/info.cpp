@@ -17,5 +17,7 @@ void printHelp() {
               << "  --fft-size=<int> Number of FFT Size (default: 8192)\n"
               << "  --use-chroma     Using chroma optimization (default: no)\n"
               << "  -swz=<int>       Smoothing window size (default: 25)\n"
-              << "  --use-weighted   Using weighted 7th chord templates (default: no)\n";
+              << "  --use-weighted   Using weighted 7th chord templates (default: no)\n"
+              << "  --weight=<float> Weight for 7th interval in weighted templates (0.0 to 1.0, default: 0.6)\n"
+              << "  -w=<float>       Short form of --weight\n";
 }
