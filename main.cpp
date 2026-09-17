@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
             std::vector<double> frameChroma(12, 0.0);
             double totalMagnitude = 0.0;
 
-            for (size_t i = 0; i < FFT_SIZE / 2; ++i) {
+            for (size_t i = 1; i < (FFT_SIZE / 2) - 1; ++i) {
                 double freq = static_cast<double>(i) * audio.sampleRate / FFT_SIZE;
                 double magnitude = std::abs(buffer[i]);
 
@@ -205,15 +205,19 @@ int main(int argc, char* argv[])
                     norm += frameChroma[i] * frameChroma[i];
                 }
                 norm = std::sqrt(norm);
-                for (int i = 0; i < frameChroma.size(); ++i) {
-                    frameChroma[i] /= norm;
+                if (norm > 1e-6)
+                {
+                    for (int i = 0; i < frameChroma.size(); ++i) {
+                        frameChroma[i] /= norm;
+                    }
                 }
             }
 
             std::string rawChord = "N/C"; // No Chord / Silence
 
             // if signal too low, skip chord detection for this frame
-            if (totalMagnitude > 1.0) { 
+            // Try using a threshold to filter out low-magnitude frequencies (normally using 1.0)
+            if (totalMagnitude > 0.1) { 
                 double maxScore = -1.0;
                 for (const auto& tmpl : chordTemplates) {
                     double score = calculateCosineSimilarity(frameChroma, tmpl.profile);
