@@ -64,6 +64,9 @@ target_include_directories(chordec_math PUBLIC src)
 add_library(chordec_info src/info.cpp)
 target_include_directories(chordec_info PUBLIC src)
 
+add_library(chordec_export src/export.cpp)
+target_include_directories(chordec_export PUBLIC src)
+
 if (BUILD_MAIN)
     add_executable(chordec main.cpp)
     target_link_libraries(chordec PRIVATE chordec_parser chordec_gen chordec_math chordec_info)
