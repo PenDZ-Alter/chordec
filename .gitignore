@@ -4,4 +4,5 @@ build
 *.mp3
 *.flac
 *.wav
+*.srt
 test_*

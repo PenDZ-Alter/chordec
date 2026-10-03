@@ -46,4 +46,22 @@ CHORDEC_API std::string getMajorityChord(const std::vector<std::string>& history
  */
 CHORDEC_API int freqToPitchClass(double freq);
 
+/**
+ * Create a weighted chord template given a root note, suffix, and interval weights
+ * This function allows for more nuanced chord templates by assigning weights to each interval.
+ * Also, this is normalized 7th and major 7th chord, so it's not always detect as 7th / maj 7th chord
+ * @param root Root note (0 = C, 1 = C#, ..., 11 = B)
+ * @param suffix Chord suffix (e.g., "Major", "Minor")
+ * @param intervalWeights Vector of pairs (interval in semitones, weight)
+ * @return ChordTemplate struct representing the weighted chord
+ */
+CHORDEC_API ChordTemplate createWeightedTemplate(int root, const std::string& suffix, const std::vector<std::pair<int, double>>& intervalWeights);
+
+/**
+ * Generate a list of weighted chord templates
+ * @param weighted7thSize The weight to assign to the 7th interval
+ * @return Vector of ChordTemplate structs with weighted profiles
+ */
+CHORDEC_API std::vector<ChordTemplate> generateWeightedChordTemplates(double weighted7thSize);
+
 #endif

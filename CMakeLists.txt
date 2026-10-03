@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(Chordec VERSION 0.2.1 LANGUAGES C CXX)
+project(Chordec VERSION 0.2.2 LANGUAGES C CXX)
 
 option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_MAIN "Build main" OFF)
@@ -64,6 +64,9 @@ target_include_directories(chordec_math PUBLIC src)
 add_library(chordec_info src/info.cpp)
 target_include_directories(chordec_info PUBLIC src)
 
+add_library(chordec_export src/export.cpp)
+target_include_directories(chordec_export PUBLIC src)
+
 if (BUILD_MAIN)
     add_executable(chordec main.cpp)
     target_link_libraries(chordec PRIVATE chordec_parser chordec_gen chordec_math chordec_info)
@@ -93,4 +96,5 @@ if (BUILD_TESTS)
     add_audio_test(test_unsmooth test/unsmooth.cpp)
     add_audio_test(test_smooth test/smooth.cpp)
     add_audio_test(test_chroma test/chroma.cpp)
+    add_audio_test(test_weighted_7th test/weighted_7th.cpp)
 endif()

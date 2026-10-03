@@ -1,8 +1,4 @@
 #include <iostream>
-#include <vector>
-#include <string>
-#include <cmath>
-#include <algorithm>
 
 #include "src/parser.cpp"
 #include "src/chord.cpp"
@@ -17,6 +13,10 @@ int main(int argc, char *argv[])
 {
     std::string file;
     std::string outputFile = "";
+    // std::string currentFilePath = (argc > 1) ? argv[1] : std::string(SAMPLE_DIR);
+    // std::string currentFilePath = (argc > 1) ? argv[1] : "";
+
+    // std::string filePath = file;
 
     AudioBuffer audio;
     size_t FFT_SIZE = 8192;
@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
         {
             std::string_view path = arg.substr(7);
             file = std::string(path);
+            std::cout << "File: " << file << std::endl;
         }
         else if (arg.rfind("-p=", 0) == 0)
         {
@@ -114,7 +115,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    HOP_SIZE = FFT_SIZE / 4;
+    HOP_SIZE = FFT_SIZE / 4; // Overlap (~0.04s per hop in 48kHz)
+
+    // std::cout << "Current Directory: " << currentFilePath << std::endl;
+    // std::cout << "Enter File name (Based on current directory): ";
+    // getline(std::cin, file);
 
     try
     {
@@ -139,20 +144,43 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    // std::cout << "Enter FFT Size (e.g., 8192): ";
+    // std::cin >> FFT_SIZE;
+
+    // std::cout << "Enter Smoothing Window Size (e.g., 150): ";
+    // std::cin >> SMOOTHING_WINDOW_SIZE;
+    // char optimizationChoice;
+
+    // std::cout << "Use Chroma Optimization? (y/n): ";
+    // std::cin >> optimizationChoice;
+    // if (optimizationChoice == 'y' || optimizationChoice == 'Y') {
+    //     usingChromaOptimization = true;
+    //     std::cout << "Chroma Optimization Enabled.\n";
+    // } else {
+    //     std::cout << "Chroma Optimization Disabled.\n";
+    // }
+
     try
     {
         auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(weighted7thSize) : generateChordTemplates();
+
+        // const size_t FFT_SIZE = 8192;
+        // const size_t HOP_SIZE = 2048; // Overlap (~0.04s per hop in 48kHz)
+
+        // Size of buffer smoothing: 25 frame (~1 second window duration)
+        // const size_t SMOOTHING_WINDOW_SIZE = 150;
+        std::vector<std::string> chordHistory;
+
         size_t totalSamples = audio.samples.size();
+        std::string lastPrintedChord = "";
 
-        // Structure penampung data mentah untuk Pass 1
-        std::vector<std::string> rawChords;
-        std::vector<double> frameTimes;
+        std::cout << "--- CHORD TIMELINE DETECTOR (SMOOTHED) ---\n";
+        std::cout << "Time (s)\tDetected Chord\n";
+        std::cout << "------------------------------------------\n";
 
-        std::cout << "Processing audio frames...\n";
+        std::vector<ChordEvent> chordEvents;
+        double lastChangeTime = 0.0;
 
-        // =========================================================================
-        // PASS 1: Extract FFT, Chroma, and Raw Chords per Frame
-        // =========================================================================
         for (size_t startIdx = 0; startIdx + FFT_SIZE <= totalSamples; startIdx += HOP_SIZE)
         {
             std::vector<Complex> buffer(FFT_SIZE);
@@ -166,6 +194,7 @@ int main(int argc, char *argv[])
 
             fft(buffer);
 
+            // Calculate Chromagram for the current frame
             std::vector<double> frameChroma(12, 0.0);
             double totalMagnitude = 0.0;
 
@@ -177,6 +206,8 @@ int main(int argc, char *argv[])
                 int pitchClass = freqToPitchClass(freq);
                 if (usingChromaOptimization)
                 {
+                    // Apply a simple threshold to filter out low-magnitude frequencies
+                    // Peak Detection
                     if (pitchClass >= 0 && magnitude > std::abs(buffer[i - 1]) && magnitude > std::abs(buffer[i + 1]))
                     {
                         frameChroma[pitchClass] += magnitude;
@@ -185,6 +216,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
+                    // If not using optimization, consider all frequencies
                     if (pitchClass >= 0)
                     {
                         frameChroma[pitchClass] += magnitude;
@@ -195,11 +227,13 @@ int main(int argc, char *argv[])
 
             if (usingChromaOptimization)
             {
+                // Logarithmic Frequency & Energy Scaling
                 for (int p = 0; p < frameChroma.size(); ++p)
                 {
                     frameChroma[p] = std::log1p(10.0 * frameChroma[p]);
                 }
 
+                // L2 Normalization
                 double norm = 0.0;
                 for (int i = 0; i < frameChroma.size(); ++i)
                 {
@@ -215,8 +249,10 @@ int main(int argc, char *argv[])
                 }
             }
 
-            std::string rawChord = "N/C";
+            std::string rawChord = "N/C"; // No Chord / Silence
 
+            // if signal too low, skip chord detection for this frame
+            // Try using a threshold to filter out low-magnitude frequencies (normally using 1.0)
             if (totalMagnitude > 0.1)
             {
                 double maxScore = -1.0;
@@ -231,33 +267,18 @@ int main(int argc, char *argv[])
                 }
             }
 
-            // Simpan hasil mentah & waktu frame-nya
-            rawChords.push_back(rawChord);
-            frameTimes.push_back(static_cast<double>(startIdx) / audio.sampleRate);
-        }
+            // --- SMOOTHING PIPELINE ---
+            chordHistory.push_back(rawChord);
+            if (chordHistory.size() > SMOOTHING_WINDOW_SIZE)
+            {
+                chordHistory.erase(chordHistory.begin());
+            }
 
-        // =========================================================================
-        // PASS 2: Centered Smoothing & Timeline Generation
-        // =========================================================================
-        std::cout << "\n--- CHORD TIMELINE DETECTOR (CENTERED SMOOTHED) ---\n";
-        std::cout << "Time (s)\tDetected Chord\n";
-        std::cout << "--------------------------------------------------\n";
+            // Catch the majority chord in the current smoothing window
+            std::string smoothedChord = getMajorityChord(chordHistory);
+            double currentTime = static_cast<double>(startIdx) / audio.sampleRate;
 
-        std::vector<ChordEvent> chordEvents;
-        std::string lastPrintedChord = "";
-        int halfWindow = static_cast<int>(SMOOTHING_WINDOW_SIZE / 2);
-
-        for (size_t i = 0; i < rawChords.size(); ++i)
-        {
-            // Ambil window simetris di sekitar frame i (melihat ke belakang DAN ke depan)
-            int startWin = std::max(0, static_cast<int>(i) - halfWindow);
-            int endWin = std::min(static_cast<int>(rawChords.size()) - 1, static_cast<int>(i) + halfWindow);
-
-            std::vector<std::string> windowSlice(rawChords.begin() + startWin, rawChords.begin() + endWin + 1);
-            std::string smoothedChord = getMajorityChord(windowSlice);
-            double currentTime = frameTimes[i];
-
-            // Cetak ke terminal & catat event jika terjadi perubahan chord
+            // print only when the smoothed chord changes to avoid flooding the terminal
             if (smoothedChord != lastPrintedChord)
             {
                 std::cout << "[" << currentTime << "s]\t\t" << smoothedChord << "\n";
@@ -268,31 +289,27 @@ int main(int argc, char *argv[])
                     chordEvents.back().endTime = currentTime;
                 }
 
+                // Buat event kord baru
                 if (smoothedChord != "N/C")
                 {
                     chordEvents.push_back({currentTime, 0.0, smoothedChord});
                 }
-            }
-        }
 
-        // Set endTime untuk chord terakhir sesuai durasi total audio
-        if (!chordEvents.empty())
-        {
-            chordEvents.back().endTime = static_cast<double>(totalSamples) / audio.sampleRate;
-        }
-
-        // =========================================================================
-        // EXPORT TO SRT (Hanya dipanggil SEKALI di luar loop)
-        // =========================================================================
-        if (!outputFile.empty() && !chordEvents.empty())
-        {
-            if (exportToSRT(chordEvents, outputFile))
-            {
-                std::cout << "\n[Success] Subtitle chord exported to: " << outputFile << "\n";
             }
-            else
+
+            // Set endTime untuk kord terakhir sesuai total durasi audio
+            if (!chordEvents.empty())
             {
-                std::cerr << "\n[Error] Failed to export subtitle to: " << outputFile << "\n";
+                chordEvents.back().endTime = static_cast<double>(totalSamples) / audio.sampleRate;
+            }
+
+            // Export jika user memasukkan opsi --output=...
+            if (!outputFile.empty())
+            {
+                if (exportToSRT(chordEvents, outputFile))
+                {
+                    // std::cout << "\n[Success] Subtitle chord exported to: " << outputFile << "\n";
+                }
             }
         }
     }
