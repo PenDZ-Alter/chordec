@@ -25,6 +25,7 @@ int main(int argc, char *argv[])
     double weighted7thSize = 0.6;
     bool usingChromaOptimization = false;
     bool usingWeightedTemplates = false;
+    std::string signature = "default";
 
     // Loop through arguments
     for (int i = 1; i < argc; ++i)
@@ -99,6 +100,25 @@ int main(int argc, char *argv[])
         {
             outputFile = std::string(arg.substr(3));
         }
+        else if (arg.rfind("--signature=", 0) == 0)
+        {
+            std::string_view sign = arg.substr(12);
+            if (sign != "default" || sign != "sharp" || sign != "flat") {
+                std::cerr << "Unknown signature: Only supported 'sharp', 'flat', and 'default'";
+                printHelp();
+                return 1;
+            }
+            signature = sign;
+        }
+        else if (arg.rfind("-sign=", 0) == 0)
+        {
+            std::string_view sign = arg.substr(6);
+            if (sign.compare("default") && sign.compare("sharp") && sign.compare("flat")) {
+                std::cerr << "Unknown signature: Only supported 'sharp', 'flat', and 'default'" << std::endl;
+                return 1;
+            }
+            signature = sign;
+        }
         else
         {
             std::cerr << "Unknown option: " << arg << "\n";
@@ -128,6 +148,7 @@ int main(int argc, char *argv[])
         std::cout << "Format      : " << (audio.format == AudioFormat::WAV ? "WAV" : (audio.format == AudioFormat::FLAC ? "FLAC" : (audio.format == AudioFormat::MP3 ? "MP3" : "UNKNOWN"))) << "\n";
         std::cout << "FFT Size    : " << FFT_SIZE << "\n";
         std::cout << "HOP Size    : " << HOP_SIZE << "\n";
+        std::cout << "Signature   : " << signature << "\n";
         std::cout << "Smoothing Window Size: " << SMOOTHING_WINDOW_SIZE << "\n";
         std::cout << "Using Chroma Optimization: " << (usingChromaOptimization ? "Yes" : "No") << "\n";
         std::cout << "Using Weighted 7th Chord Templates: " << (usingWeightedTemplates ? "Yes" : "No") << "\n";
@@ -141,7 +162,7 @@ int main(int argc, char *argv[])
 
     try
     {
-        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(weighted7thSize) : generateChordTemplates();
+        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(weighted7thSize, signature) : generateChordTemplates(signature);
         size_t totalSamples = audio.samples.size();
 
         // Structure penampung data mentah untuk Pass 1
