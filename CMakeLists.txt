@@ -79,7 +79,7 @@ target_include_directories(chordec_export PUBLIC src)
 
 if (BUILD_MAIN)
     add_executable(chordec main.cpp)
-    target_link_libraries(chordec PRIVATE chordec_parser chordec_gen chordec_math chordec_info)
+    target_link_libraries(chordec PRIVATE chordec_parser chordec_gen chordec_math chordec_info chordec_export)
 endif()
 
 if (BUILD_TESTS)
