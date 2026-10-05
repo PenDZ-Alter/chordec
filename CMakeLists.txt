@@ -5,10 +5,10 @@ project(Chordec VERSION 0.2.3 LANGUAGES C CXX)
 set(PROJECT_VERSION_REVISE "r1")
 
 # Combine them into a full version string if you want an easy "x.y.z-r1" macro
-if(PROJECT_VERSION_REVISE)
-    set(PROJECT_FULL_VERSION "${PROJECT_VERSION}-${PROJECT_VERSION_REVISE}")
-else()
+if(PROJECT_VERSION_REVISE STREQUAL "")
     set(PROJECT_FULL_VERSION "${PROJECT_VERSION}")
+else()
+    set(PROJECT_FULL_VERSION "${PROJECT_VERSION}-${PROJECT_VERSION_REVISE}")
 endif()
 
 option(BUILD_TESTS "Build tests" OFF)
