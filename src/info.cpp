@@ -5,7 +5,8 @@
 #include "headers/info.h"
 
 void printVersion() {
-    std::cout << PROJECT_NAME << " v" << PROJECT_VERSION << std::endl;
+    std::cout << PROJECT_NAME << " v" << PROJECT_FULL_VERSION << std::endl;
+    std::cout << "Author by PenDZ (2026)\n";
 }
 
 void printHelp() {

@@ -1,11 +1,21 @@
 cmake_minimum_required(VERSION 3.14)
 project(Chordec VERSION 0.2.3 LANGUAGES C CXX)
 
+# Add your revision or suffix here
+set(PROJECT_VERSION_REVISE "r1")
+
+# Combine them into a full version string if you want an easy "x.y.z-r1" macro
+if(PROJECT_VERSION_REVISE)
+    set(PROJECT_FULL_VERSION "${PROJECT_VERSION}-${PROJECT_VERSION_REVISE}")
+else()
+    set(PROJECT_FULL_VERSION "${PROJECT_VERSION}")
+endif()
+
 option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_MAIN "Build main" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries instead of static" OFF)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Hide symbol as default if using shared libraries (Best Practice)

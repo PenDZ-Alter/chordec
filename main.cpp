@@ -3,6 +3,8 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
+#include <string_view>
+#include <cstdlib>
 
 #include "src/parser.cpp"
 #include "src/chord.cpp"
@@ -32,6 +34,12 @@ int main(int argc, char *argv[])
     {
         std::string_view arg = argv[i];
 
+        // Helper lambda to extract value after '='
+        auto getValue = [](std::string_view a, size_t prefixLen)
+        {
+            return std::string(a.substr(prefixLen));
+        };
+
         if (arg == "-v" || arg == "--version")
         {
             printVersion();
@@ -42,33 +50,27 @@ int main(int argc, char *argv[])
             printHelp();
             return 0;
         }
-        else if (arg.rfind("--path=", 0) == 0)
+        else if (arg.starts_with("--path=") || arg.starts_with("-p="))
         {
-            std::string_view path = arg.substr(7);
-            file = std::string(path);
+            size_t len = arg.starts_with("--path=") ? 7 : 3;
+            file = getValue(arg, len);
         }
-        else if (arg.rfind("-p=", 0) == 0)
+        else if (arg.starts_with("--fft-size="))
         {
-            std::string_view path = arg.substr(3);
-            file = std::string(path);
+            FFT_SIZE = std::stoul(getValue(arg, 11));
         }
-        else if (arg.rfind("--fft-size=", 0) == 0)
-        {
-            std::string_view sizeStr = arg.substr(11);
-            FFT_SIZE = std::stoul(std::string(sizeStr));
-        }
-        else if (arg.rfind("--use-chroma", 0) == 0)
+        else if (arg == "--use-chroma")
         {
             usingChromaOptimization = true;
         }
-        else if (arg.rfind("--use-weighted", 0) == 0)
+        else if (arg == "--use-weighted")
         {
             usingWeightedTemplates = true;
         }
-        else if (arg.rfind("--weight=", 0) == 0)
+        else if (arg.starts_with("--weight=") || arg.starts_with("-w="))
         {
-            std::string_view weightStr = arg.substr(9);
-            double weightValue = std::stod(std::string(weightStr));
+            size_t len = arg.starts_with("--weight=") ? 9 : 3;
+            double weightValue = std::stod(getValue(arg, len));
             if (weightValue < 0.0 || weightValue > 1.0)
             {
                 std::cerr << "Error: Weight value must be between 0.0 and 1.0\n";
@@ -76,48 +78,26 @@ int main(int argc, char *argv[])
             }
             weighted7thSize = weightValue;
         }
-        else if (arg.rfind("-w=", 0) == 0)
+        else if (arg.starts_with("-swz="))
         {
-            std::string_view weightStr = arg.substr(3);
-            double weightValue = std::stod(std::string(weightStr));
-            if (weightValue < 0.0 || weightValue > 1.0)
+            SMOOTHING_WINDOW_SIZE = std::stoul(getValue(arg, 5));
+        }
+        else if (arg.starts_with("--output=") || arg.starts_with("-o="))
+        {
+            size_t len = arg.starts_with("--output=") ? 9 : 3;
+            outputFile = getValue(arg, len);
+        }
+        else if (arg.starts_with("--signature=") || arg.starts_with("-sign="))
+        {
+            size_t len = arg.starts_with("--signature=") ? 12 : 6;
+            std::string_view sign = arg.substr(len);
+            if (sign != "default" && sign != "sharp" && sign != "flat")
             {
-                std::cerr << "Error: Weight value must be between 0.0 and 1.0\n";
-                return 1;
-            }
-            weighted7thSize = weightValue;
-        }
-        else if (arg.rfind("-swz=", 0) == 0)
-        {
-            std::string_view sizeStr = arg.substr(5);
-            SMOOTHING_WINDOW_SIZE = std::stoul(std::string(sizeStr));
-        }
-        else if (arg.rfind("--output=", 0) == 0)
-        {
-            outputFile = std::string(arg.substr(9));
-        }
-        else if (arg.rfind("-o=", 0) == 0)
-        {
-            outputFile = std::string(arg.substr(3));
-        }
-        else if (arg.rfind("--signature=", 0) == 0)
-        {
-            std::string_view sign = arg.substr(12);
-            if (sign != "default" || sign != "sharp" || sign != "flat") {
-                std::cerr << "Unknown signature: Only supported 'sharp', 'flat', and 'default'";
+                std::cerr << "Unknown signature: Only supported 'sharp', 'flat', and 'default'\n";
                 printHelp();
                 return 1;
             }
-            signature = sign;
-        }
-        else if (arg.rfind("-sign=", 0) == 0)
-        {
-            std::string_view sign = arg.substr(6);
-            if (sign.compare("default") && sign.compare("sharp") && sign.compare("flat")) {
-                std::cerr << "Unknown signature: Only supported 'sharp', 'flat', and 'default'" << std::endl;
-                return 1;
-            }
-            signature = sign;
+            signature = std::string(sign);
         }
         else
         {
