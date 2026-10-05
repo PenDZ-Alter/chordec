@@ -2,8 +2,8 @@
 
 #include "../src/parser.cpp"
 #include "../src/chord.cpp"
-#include "../src/math.cpp"
-#include "../src/params.h"
+#include "../src/ca_math.cpp"
+#include "../src/headers/params.h"
 
 int main(int argc, char* argv[]) {
     std::string filePath = (argc > 1) ? argv[1] : std::string(SAMPLE_DIR) + "/sample.flac";

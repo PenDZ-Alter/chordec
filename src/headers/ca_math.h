@@ -1,17 +1,18 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef CA_MATH_H
+#define CA_MATH_H
 
 #include <iostream>
 #include <vector>
 #include <complex>
 
 #include "params.h"
+#include "libs/api.h"
 
 /**
  * Fast-Fourier Transform
  * @param <vector> size of frequency
  */
-void fft(std::vector<Complex>& x);
+static void fft(std::vector<Complex>& x);
 
 /**
  * Calculate Cosine Similarity between two vectors
@@ -19,6 +20,6 @@ void fft(std::vector<Complex>& x);
  * @param templateProfile Template vector (size 12)
  * @return Cosine Similarity value
  */
-double calculateCosineSimilarity(const std::vector<double>& chroma, const std::vector<double>& templateProfile);
+CHORDEC_API double calculateCosineSimilarity(const std::vector<double>& chroma, const std::vector<double>& templateProfile);
 
 #endif

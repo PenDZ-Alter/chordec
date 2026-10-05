@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
     try 
     {
         AudioBuffer audio = loadAudioFile(filePath);
-        auto chordTemplates = generateChordTemplates();
+        auto chordTemplates = generateWeightedChordTemplates(0.6);
 
         const size_t FFT_SIZE = 8192;
         const size_t HOP_SIZE = 2048; // Overlap (~0.04s per hop in 48kHz)
@@ -48,30 +48,34 @@ int main(int argc, char* argv[])
                 double magnitude = std::abs(buffer[i]);
 
                 int pitchClass = freqToPitchClass(freq);
-                if (pitchClass >= 0 && magnitude > std::abs(buffer[i-1]) && magnitude > std::abs(buffer[i+1])) // Peak detection
-                {
+                if (pitchClass >= 0) {
                     frameChroma[pitchClass] += magnitude;
                     totalMagnitude += magnitude;
                 }
+                // if (pitchClass >= 0 && magnitude > std::abs(buffer[i-1]) && magnitude > std::abs(buffer[i+1])) // Peak detection
+                // {
+                //     frameChroma[pitchClass] += magnitude;
+                //     totalMagnitude += magnitude;
+                // }
             }
 
-            // Logaritmic Frequency & Energy Scaling
-            for (int p = 0; p < frameChroma.size(); ++p)
-            {
-                frameChroma[p] = std::log1p(10.0 * frameChroma[p]);
-            }
+            // // Logaritmic Frequency & Energy Scaling
+            // for (int p = 0; p < frameChroma.size(); ++p)
+            // {
+            //     frameChroma[p] = std::log1p(10.0 * frameChroma[p]);
+            // }
             
-            // L2 Normalization
-            double norm = 0.0;
-            for (int i = 0; i < frameChroma.size(); ++i) {
-                norm += frameChroma[i] * frameChroma[i];
-            }
-            norm = std::sqrt(norm);
-            if (norm > 0.001) {
-                for (int i = 0; i < frameChroma.size(); ++i) {
-                    frameChroma[i] /= norm;
-                }
-            }
+            // // L2 Normalization
+            // double norm = 0.0;
+            // for (int i = 0; i < frameChroma.size(); ++i) {
+            //     norm += frameChroma[i] * frameChroma[i];
+            // }
+            // norm = std::sqrt(norm);
+            // if (norm > 0.001) {
+            //     for (int i = 0; i < frameChroma.size(); ++i) {
+            //         frameChroma[i] /= norm;
+            //     }
+            // }
 
             std::string rawChord = "N/C"; // No Chord / Silence
 

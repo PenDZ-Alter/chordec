@@ -3,8 +3,6 @@
 #include <string>
 #include <cmath>
 #include <algorithm>
-#include <string_view>
-#include <cstdlib>
 
 #include "src/parser.cpp"
 #include "src/chord.cpp"
@@ -27,18 +25,11 @@ int main(int argc, char *argv[])
     double weighted7thSize = 0.6;
     bool usingChromaOptimization = false;
     bool usingWeightedTemplates = false;
-    std::string signature = "default";
 
     // Loop through arguments
     for (int i = 1; i < argc; ++i)
     {
         std::string_view arg = argv[i];
-
-        // Helper lambda to extract value after '='
-        auto getValue = [](std::string_view a, size_t prefixLen)
-        {
-            return std::string(a.substr(prefixLen));
-        };
 
         if (arg == "-v" || arg == "--version")
         {
@@ -50,27 +41,33 @@ int main(int argc, char *argv[])
             printHelp();
             return 0;
         }
-        else if (arg.starts_with("--path=") || arg.starts_with("-p="))
+        else if (arg.rfind("--path=", 0) == 0)
         {
-            size_t len = arg.starts_with("--path=") ? 7 : 3;
-            file = getValue(arg, len);
+            std::string_view path = arg.substr(7);
+            file = std::string(path);
         }
-        else if (arg.starts_with("--fft-size="))
+        else if (arg.rfind("-p=", 0) == 0)
         {
-            FFT_SIZE = std::stoul(getValue(arg, 11));
+            std::string_view path = arg.substr(3);
+            file = std::string(path);
         }
-        else if (arg == "--use-chroma")
+        else if (arg.rfind("--fft-size=", 0) == 0)
+        {
+            std::string_view sizeStr = arg.substr(11);
+            FFT_SIZE = std::stoul(std::string(sizeStr));
+        }
+        else if (arg.rfind("--use-chroma", 0) == 0)
         {
             usingChromaOptimization = true;
         }
-        else if (arg == "--use-weighted")
+        else if (arg.rfind("--use-weighted", 0) == 0)
         {
             usingWeightedTemplates = true;
         }
-        else if (arg.starts_with("--weight=") || arg.starts_with("-w="))
+        else if (arg.rfind("--weight=", 0) == 0)
         {
-            size_t len = arg.starts_with("--weight=") ? 9 : 3;
-            double weightValue = std::stod(getValue(arg, len));
+            std::string_view weightStr = arg.substr(9);
+            double weightValue = std::stod(std::string(weightStr));
             if (weightValue < 0.0 || weightValue > 1.0)
             {
                 std::cerr << "Error: Weight value must be between 0.0 and 1.0\n";
@@ -78,26 +75,29 @@ int main(int argc, char *argv[])
             }
             weighted7thSize = weightValue;
         }
-        else if (arg.starts_with("-swz="))
+        else if (arg.rfind("-w=", 0) == 0)
         {
-            SMOOTHING_WINDOW_SIZE = std::stoul(getValue(arg, 5));
-        }
-        else if (arg.starts_with("--output=") || arg.starts_with("-o="))
-        {
-            size_t len = arg.starts_with("--output=") ? 9 : 3;
-            outputFile = getValue(arg, len);
-        }
-        else if (arg.starts_with("--signature=") || arg.starts_with("-sign="))
-        {
-            size_t len = arg.starts_with("--signature=") ? 12 : 6;
-            std::string_view sign = arg.substr(len);
-            if (sign != "default" && sign != "sharp" && sign != "flat")
+            std::string_view weightStr = arg.substr(3);
+            double weightValue = std::stod(std::string(weightStr));
+            if (weightValue < 0.0 || weightValue > 1.0)
             {
-                std::cerr << "Unknown signature: Only supported 'sharp', 'flat', and 'default'\n";
-                printHelp();
+                std::cerr << "Error: Weight value must be between 0.0 and 1.0\n";
                 return 1;
             }
-            signature = std::string(sign);
+            weighted7thSize = weightValue;
+        }
+        else if (arg.rfind("-swz=", 0) == 0)
+        {
+            std::string_view sizeStr = arg.substr(5);
+            SMOOTHING_WINDOW_SIZE = std::stoul(std::string(sizeStr));
+        }
+        else if (arg.rfind("--output=", 0) == 0)
+        {
+            outputFile = std::string(arg.substr(9));
+        }
+        else if (arg.rfind("-o=", 0) == 0)
+        {
+            outputFile = std::string(arg.substr(3));
         }
         else
         {
@@ -128,7 +128,6 @@ int main(int argc, char *argv[])
         std::cout << "Format      : " << (audio.format == AudioFormat::WAV ? "WAV" : (audio.format == AudioFormat::FLAC ? "FLAC" : (audio.format == AudioFormat::MP3 ? "MP3" : "UNKNOWN"))) << "\n";
         std::cout << "FFT Size    : " << FFT_SIZE << "\n";
         std::cout << "HOP Size    : " << HOP_SIZE << "\n";
-        std::cout << "Signature   : " << signature << "\n";
         std::cout << "Smoothing Window Size: " << SMOOTHING_WINDOW_SIZE << "\n";
         std::cout << "Using Chroma Optimization: " << (usingChromaOptimization ? "Yes" : "No") << "\n";
         std::cout << "Using Weighted 7th Chord Templates: " << (usingWeightedTemplates ? "Yes" : "No") << "\n";
@@ -142,7 +141,7 @@ int main(int argc, char *argv[])
 
     try
     {
-        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(weighted7thSize, signature) : generateChordTemplates(signature);
+        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(weighted7thSize) : generateChordTemplates();
         size_t totalSamples = audio.samples.size();
 
         // Structure penampung data mentah untuk Pass 1
