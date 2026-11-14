@@ -5,4 +5,7 @@ build
 *.flac
 *.wav
 *.srt
+*.txt
 test_*
+
+tree

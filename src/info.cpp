@@ -22,5 +22,6 @@ void printHelp() {
               << "  --weight=<float>     Weight for 7th interval in weighted templates (0.0 to 1.0, default: 0.6)\n"
               << "  -w=<float>           Short form of --weight\n"
               << "  --signature=<string> Specify the signature for chord names (default: 'default', options: 'sharp', 'flat')\n"
-              << "  -sign=<string>       Short form of --signature\n";
+              << "  -sign=<string>       Short form of --signature\n"
+              << "  --disable-7th-chords Disable 7th chords in chord generator (alt. --disable-7th)";
 }

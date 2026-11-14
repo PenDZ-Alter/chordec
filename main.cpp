@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <string_view>
 #include <cstdlib>
+#include <iomanip>
+#include <utility>
 
 #include "src/parser.cpp"
 #include "src/chord.cpp"
@@ -23,10 +25,11 @@ int main(int argc, char *argv[])
     AudioBuffer audio;
     size_t FFT_SIZE = 8192;
     size_t HOP_SIZE;
-    size_t SMOOTHING_WINDOW_SIZE = 25;
+    size_t SMOOTHING_WINDOW_SIZE = 20;
     double weighted7thSize = 0.6;
     bool usingChromaOptimization = false;
     bool usingWeightedTemplates = false;
+    bool using7thChords = true;
     std::string signature = "default";
 
     // Loop through arguments
@@ -65,7 +68,15 @@ int main(int argc, char *argv[])
         }
         else if (arg == "--use-weighted")
         {
+            if (!using7thChords) {
+                std::cerr << "For using weighted 7th chords, you need to enable 7th chords!" << std::endl;
+                return 1;
+            }
             usingWeightedTemplates = true;
+        }
+        else if (arg == "--disable-7th-chords" || arg == "--disable-7th")
+        {
+            using7thChords = false;
         }
         else if (arg.starts_with("--weight=") || arg.starts_with("-w="))
         {
@@ -142,20 +153,35 @@ int main(int argc, char *argv[])
 
     try
     {
-        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(weighted7thSize, signature) : generateChordTemplates(signature);
+        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(weighted7thSize, signature, using7thChords) : generateChordTemplates(signature, using7thChords);
         size_t totalSamples = audio.samples.size();
 
-        // Structure penampung data mentah untuk Pass 1
+        // Raw buffer structure for pass 1
         std::vector<std::string> rawChords;
         std::vector<double> frameTimes;
 
         std::cout << "Processing audio frames...\n";
+
+        std::ofstream debugFile("/home/abx41/code/chordec/debug_chroma_data.txt");
+        std::ofstream compareFile("/home/abx41/code/chordec/debug_comp.txt");
+
+        if (!debugFile.is_open() || !compareFile.is_open())
+        {
+            std::cerr << "Error opening file!" << std::endl;
+            return 0;
+        }
 
         // =========================================================================
         // PASS 1: Extract FFT, Chroma, and Raw Chords per Frame
         // =========================================================================
         for (size_t startIdx = 0; startIdx + FFT_SIZE <= totalSamples; startIdx += HOP_SIZE)
         {
+            debugFile << "\n==== STEP INFORMATION ====\n";
+            debugFile << "Frame StartIdx: " << startIdx << "\n";
+            debugFile << "Frame Time: "
+                      << static_cast<double>(startIdx) / audio.sampleRate
+                      << " seconds\n";
+
             std::vector<Complex> buffer(FFT_SIZE);
 
             for (size_t i = 0; i < FFT_SIZE; ++i)
@@ -196,6 +222,39 @@ int main(int argc, char *argv[])
 
             if (usingChromaOptimization)
             {
+                auto rawChroma = frameChroma;
+
+                debugFile << "\n=== RAW CHROMA ===\n";
+                for (size_t i = 0; i < rawChroma.size(); i++)
+                {
+                    debugFile << NOTE_NAMES[i] << ": "
+                              << rawChroma[i] << "\n";
+
+                    if (i % 12 == 11)
+                    {
+                        debugFile << "\n";
+                    }
+                }
+
+                auto logChroma = frameChroma;
+                for (auto &value : logChroma)
+                {
+                    value = std::log1p(10.0 * value);
+                }
+
+                debugFile << "\n=== LOG CHROMA ===\n";
+
+                for (size_t i = 0; i < logChroma.size(); i++)
+                {
+                    debugFile << NOTE_NAMES[i] << ": "
+                              << logChroma[i] << "\n";
+
+                    if (i % 12 == 11)
+                    {
+                        debugFile << "\n";
+                    }
+                }
+
                 for (int p = 0; p < frameChroma.size(); ++p)
                 {
                     frameChroma[p] = std::log1p(10.0 * frameChroma[p]);
@@ -216,7 +275,61 @@ int main(int argc, char *argv[])
                 }
             }
 
+            debugFile << "\n=== NORMALIZE/FRAME CHROMA ===\n";
+            for (size_t i = 0; i < frameChroma.size(); i++)
+            {
+                debugFile << NOTE_NAMES[i] << ": " << frameChroma[i] << std::endl;
+
+                if (i % 12 == 11)
+                {
+                    debugFile << "\n";
+                }
+            }
+
             std::string rawChord = "N/C";
+
+            std::vector<std::pair<double, std::string>> candidateScores;
+
+            candidateScores.reserve(chordTemplates.size());
+
+            for (const auto &tmpl : chordTemplates)
+            {
+                double score = calculateCosineSimilarity(
+                    frameChroma,
+                    tmpl.profile);
+
+                candidateScores.emplace_back(score, tmpl.name);
+            }
+
+            std::sort(
+                candidateScores.begin(),
+                candidateScores.end(),
+                [](const auto &a, const auto &b)
+                {
+                    return a.first > b.first;
+                });
+
+            if (!candidateScores.empty())
+            {
+                rawChord = candidateScores.front().second;
+
+                compareFile << "\n=== TOP 5 CHORD CANDIDATES ===\n";
+
+                for (size_t i = 0;
+                     i < std::min(size_t(5), candidateScores.size());
+                     ++i)
+                {
+
+                    compareFile
+                        << i + 1 << ". "
+                        << candidateScores[i].second
+                        << " : "
+                        << std::fixed
+                        << std::setprecision(6)
+                        << candidateScores[i].first
+                        << "\n";
+                }
+            }
 
             if (totalMagnitude > 0.1)
             {
@@ -230,12 +343,18 @@ int main(int argc, char *argv[])
                         rawChord = tmpl.name;
                     }
                 }
+                debugFile << "\n=== COSINE SIMILARITY ===\n";
+                debugFile << "Score: " << maxScore << "\n";
+                debugFile << "Raw Chord: " << rawChord << "\n\n";
             }
 
-            // Simpan hasil mentah & waktu frame-nya
+            // Save RAW result and its time
             rawChords.push_back(rawChord);
             frameTimes.push_back(static_cast<double>(startIdx) / audio.sampleRate);
         }
+
+        debugFile.close();
+        compareFile.close();
 
         // =========================================================================
         // PASS 2: Centered Smoothing & Timeline Generation

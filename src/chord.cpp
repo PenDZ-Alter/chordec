@@ -81,13 +81,13 @@ ChordTemplate createWeightedTemplate(int root, const std::string& suffix, const 
     return tmpl;
 }
 
-std::vector<ChordTemplate> generateChordTemplates(std::string& sign) 
+std::vector<ChordTemplate> generateChordTemplates(std::string& sign, bool use7th) 
 {
     std::vector<ChordTemplate> templates;
 
     for (int root = 0; root < 12; ++root) {
         /// --- TRIADS ---
-        templates.push_back(createTemplate(root, "",        {0, 4, 7}, sign));
+        templates.push_back(createTemplate(root, "",        {0, 4, 7}, sign)); // Major/Dominant
         templates.push_back(createTemplate(root, "m",       {0, 3, 7}, sign)); // Minor
         templates.push_back(createTemplate(root, "sus4",    {0, 5, 7}, sign)); // Suspended 4th
         templates.push_back(createTemplate(root, "sus2",    {0, 2, 7}, sign)); // Suspended 2nd
@@ -95,15 +95,17 @@ std::vector<ChordTemplate> generateChordTemplates(std::string& sign)
         templates.push_back(createTemplate(root, "aug",     {0, 4, 8}, sign)); // Augmented
 
         // --- 7TH CHORDS ---
-        templates.push_back(createTemplate(root, "7",       {0, 4, 7, 10}, sign)); // Dominant 7th
-        templates.push_back(createTemplate(root, "maj7",    {0, 4, 7, 11}, sign)); // Major 7th
-        templates.push_back(createTemplate(root, "m7",      {0, 3, 7, 10}, sign)); // Minor 7th
+        if (use7th) {
+            templates.push_back(createTemplate(root, "7",       {0, 4, 7, 10}, sign)); // Dominant 7th
+            templates.push_back(createTemplate(root, "maj7",    {0, 4, 7, 11}, sign)); // Major 7th
+            templates.push_back(createTemplate(root, "m7",      {0, 3, 7, 10}, sign)); // Minor 7th
+        }
     }
 
     return templates;
 }
 
-std::vector<ChordTemplate> generateWeightedChordTemplates(double weighted7thSize, std::string& sign) {
+std::vector<ChordTemplate> generateWeightedChordTemplates(double weighted7thSize, std::string& sign, bool use7th) {
     std::vector<ChordTemplate> templates;
 
     for (int root = 0; root < 12; ++root) {
@@ -121,14 +123,16 @@ std::vector<ChordTemplate> generateWeightedChordTemplates(double weighted7thSize
         templates.push_back(createWeightedTemplate(root, "aug",     {{0, 1.0}, {4, 1.0}, {8, 1.0}}, sign));
 
         // --- 7TH CHORDS (7th chord assign by weighted7thSize) ---
-        // Dominant 7th (Root, Maj 3rd, 5th, Min 7th [weighted7thSize])
-        templates.push_back(createWeightedTemplate(root, "7",       {{0, 1.0}, {4, 1.0}, {7, 1.0}, {10, weighted7thSize}}, sign));
-        
-        // Major 7th (Root, Maj 3rd, 5th, Maj 7th [weighted7thSize])
-        templates.push_back(createWeightedTemplate(root, "maj7",    {{0, 1.0}, {4, 1.0}, {7, 1.0}, {11, weighted7thSize}}, sign));
-        
-        // Minor 7th (Root, Min 3rd, 5th, Min 7th [weighted7thSize])
-        templates.push_back(createWeightedTemplate(root, "m7",      {{0, 1.0}, {3, 1.0}, {7, 1.0}, {10, weighted7thSize}}, sign));
+        if (use7th) {
+            // Dominant 7th (Root, Maj 3rd, 5th, Min 7th [weighted7thSize])
+            templates.push_back(createWeightedTemplate(root, "7",       {{0, 1.0}, {4, 1.0}, {7, 1.0}, {10, weighted7thSize}}, sign));
+            
+            // Major 7th (Root, Maj 3rd, 5th, Maj 7th [weighted7thSize])
+            templates.push_back(createWeightedTemplate(root, "maj7",    {{0, 1.0}, {4, 1.0}, {7, 1.0}, {11, weighted7thSize}}, sign));
+            
+            // Minor 7th (Root, Min 3rd, 5th, Min 7th [weighted7thSize])
+            templates.push_back(createWeightedTemplate(root, "m7",      {{0, 1.0}, {3, 1.0}, {7, 1.0}, {10, weighted7thSize}}, sign));
+        }
     }
 
     return templates;

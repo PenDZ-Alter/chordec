@@ -40,3 +40,10 @@ autoclean:
 	cd ..
 	rm -rf $(BUILD_DIR)
 .PHONY: all test clean
+
+build: 
+	@echo "== [BUILD CHORDEC] =="
+	mkdir -p $(BUILD_DIR)
+	cd $(BUILD_DIR)
+	cmake . -DBUILD_SHARED_LIBS=ON -DBUILD_MAIN=ON
+	cmake --build $(BUILD_DIR)

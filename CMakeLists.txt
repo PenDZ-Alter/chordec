@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(Chordec VERSION 0.2.3 LANGUAGES C CXX)
+project(Chordec VERSION 0.3.0 LANGUAGES C CXX)
 
 # Add your revision or suffix here
 set(PROJECT_VERSION_REVISE "r1")
