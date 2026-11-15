@@ -10,6 +10,7 @@
 
 /**
  * Fast-Fourier Transform
+ * Recursive Radix-2 Cooley-Tukey FFT
  * @param <vector> size of frequency
  */
 static void fft(std::vector<Complex>& x);
