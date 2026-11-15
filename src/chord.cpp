@@ -8,12 +8,12 @@
 #include "headers/chord.h"
 #include "headers/params.h"
 
-int freqToPitchClass(double freq) 
+int freqToPitchClass(double freq, double referenceA4) 
 {
     if (freq < 20.0 || freq > 5000.0) return -1; // Filter low & high freq (noise)
     
     // Formula MIDI Note
-    double pitch = 69.0 + 12.0 * std::log2(freq / 440.0); // Use standard tuning A4 = 440Hz
+    double pitch = 69.0 + 12.0 * std::log2(freq / referenceA4); // Use standard tuning A4 = 440Hz
     int note = static_cast<int>(std::round(pitch)) % 12;
     return (note < 0) ? note + 12 : note;
 }

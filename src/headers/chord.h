@@ -22,9 +22,10 @@ struct CHORDEC_API ChordTemplate {
  * @param root Root note (0 = C, 1 = C#, ..., 11 = B)
  * @param suffix Chord suffix (e.g., "Major", "Minor")
  * @param intervals Vector of intervals (in semitones) from the root note
+ * @param sign Signature notes
  * @return ChordTemplate struct representing the chord
  */
-ChordTemplate createTemplate(int root, const std::string& suffix, const std::vector<int>& intervals);
+ChordTemplate createTemplate(int root, const std::string& suffix, const std::vector<int>& intervals, const std::string& sign);
 
 /**
  * Generate a list of chord templates
@@ -44,9 +45,10 @@ CHORDEC_API std::string getMajorityChord(const std::vector<std::string>& history
 /**
  * Mapping Frequency (Hz) to Pitch Class (0 = C, 1 = C#, ..., 11 = B)
  * @param freq Frequency in Hz
+ * @param referenceA4 Tuning frequency based on A4 (standard) (alt. tuning frequency)
  * @return Pitch Class (0-11) or -1 if frequency is out of range
  */
-CHORDEC_API int freqToPitchClass(double freq);
+CHORDEC_API int freqToPitchClass(double freq, double referenceA4);
 
 /**
  * Create a weighted chord template given a root note, suffix, and interval weights
@@ -55,9 +57,10 @@ CHORDEC_API int freqToPitchClass(double freq);
  * @param root Root note (0 = C, 1 = C#, ..., 11 = B)
  * @param suffix Chord suffix (e.g., "Major", "Minor")
  * @param intervalWeights Vector of pairs (interval in semitones, weight)
+ * @param sign Signature notes
  * @return ChordTemplate struct representing the weighted chord
  */
-CHORDEC_API ChordTemplate createWeightedTemplate(int root, const std::string& suffix, const std::vector<std::pair<int, double>>& intervalWeights);
+CHORDEC_API ChordTemplate createWeightedTemplate(int root, const std::string& suffix, const std::vector<std::pair<int, double>>& intervalWeights, const std::string& sign);
 
 /**
  * Generate a list of weighted chord templates

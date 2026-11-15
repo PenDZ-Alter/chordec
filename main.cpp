@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
     size_t FFT_SIZE = 8192;
     size_t HOP_SIZE = FFT_SIZE / 4;
     size_t SMOOTHING_WINDOW_SIZE = 20;
+    double tuning = 440.0; // reference of A4 freq
     double weighted7thSize = 0.6;
     bool usingChromaOptimization = false;
     bool usingWeightedTemplates = false;
@@ -100,6 +101,11 @@ int main(int argc, char *argv[])
                 return 1;
             }
             weighted7thSize = weightValue;
+        }
+        else if (arg.starts_with("--tuning=") || arg.starts_with("-t=")) {
+            size_t len = arg.starts_with("--tuning=") ? 9 : 3;
+            double tuningValue = std::stod(getValue(arg, len));
+            tuning = tuningValue;
         }
         else if (arg.starts_with("-swz="))
         {
@@ -212,7 +218,7 @@ int main(int argc, char *argv[])
                 double freq = static_cast<double>(i) * audio.sampleRate / FFT_SIZE;
                 double magnitude = std::abs(buffer[i]);
 
-                int pitchClass = freqToPitchClass(freq);
+                int pitchClass = freqToPitchClass(freq, tuning);
                 if (usingChromaOptimization)
                 {
                     if (pitchClass >= 0 && magnitude > std::abs(buffer[i - 1]) && magnitude > std::abs(buffer[i + 1]))
@@ -315,8 +321,6 @@ int main(int argc, char *argv[])
             }
 
             std::string rawChord = "N/C";
-
-            std::vector<std::pair<double, std::string>> candidateScores;
 
             if (totalMagnitude > 0.1)
             {
