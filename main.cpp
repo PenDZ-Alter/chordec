@@ -7,6 +7,8 @@
 #include <cstdlib>
 #include <iomanip>
 #include <utility>
+#include <filesystem>
+#include <fstream>
 
 #include "src/parser.cpp"
 #include "src/chord.cpp"
@@ -21,6 +23,7 @@ int main(int argc, char *argv[])
 {
     std::string file;
     std::string outputFile = "";
+    std::filesystem::path debugDir = "./debug";
 
     AudioBuffer audio;
     size_t FFT_SIZE = 8192;
@@ -33,6 +36,7 @@ int main(int argc, char *argv[])
     bool using7thChords = true;
     bool usingLogCompression = false;
     bool usingL2Normalization = false;
+    bool usingDebug = false;
     std::string signature = "default";
 
     // Loop through arguments
@@ -78,17 +82,28 @@ int main(int argc, char *argv[])
             }
             usingWeightedTemplates = true;
         }
+        else if (arg == "--debug")
+        {
+            usingDebug = true;
+        }
+        else if (arg.starts_with("--debug-dir="))
+        {
+            debugDir = getValue(arg, 12);
+        }
         else if (arg == "--disable-7th-chords" || arg == "--disable-7th")
         {
             using7thChords = false;
         }
-        else if (arg == "--use-log-compression" || arg == "--use-log") { 
+        else if (arg == "--use-log-compression" || arg == "--use-log")
+        {
             usingLogCompression = true;
         }
-        else if (arg == "--use-l2-normalization" || arg == "--use-l2") {
+        else if (arg == "--use-l2-normalization" || arg == "--use-l2")
+        {
             usingL2Normalization = true;
         }
-        else if (arg.starts_with("--hop-size=")) {
+        else if (arg.starts_with("--hop-size="))
+        {
             HOP_SIZE = std::stoul(getValue(arg, 11));
         }
         else if (arg.starts_with("--weight=") || arg.starts_with("-w="))
@@ -102,7 +117,8 @@ int main(int argc, char *argv[])
             }
             weighted7thSize = weightValue;
         }
-        else if (arg.starts_with("--tuning=") || arg.starts_with("-t=")) {
+        else if (arg.starts_with("--tuning=") || arg.starts_with("-t="))
+        {
             size_t len = arg.starts_with("--tuning=") ? 9 : 3;
             double tuningValue = std::stod(getValue(arg, len));
             tuning = tuningValue;
@@ -179,14 +195,30 @@ int main(int argc, char *argv[])
         std::cout << "Processing audio frames...\n";
 
         // Debug file
-        std::ofstream debugFile("/home/abx41/code/chordec/debug/chroma.txt");
-        std::ofstream compareFile("/home/abx41/code/chordec/debug/candidates.txt");
-        std::ofstream rawChordsFile("/home/abx41/code/chordec/debug/raw_chords.txt");
+        std::ofstream debugFile;
+        std::ofstream compareFile;
+        std::ofstream rawChordsFile;
 
-        if (!debugFile.is_open() || !compareFile.is_open() || !rawChordsFile.is_open())
+        if (usingDebug)
         {
-            std::cerr << "Error opening file!" << std::endl;
-            return 0;
+            if (usingDebug)
+            {
+                std::filesystem::create_directories(debugDir);
+
+                debugFile.open(debugDir / "chroma.txt");
+                compareFile.open(debugDir / "candidates.txt");
+                rawChordsFile.open(debugDir / "raw_chords.txt");
+
+                if (!debugFile.is_open() ||
+                    !compareFile.is_open() ||
+                    !rawChordsFile.is_open())
+                {
+                    std::cerr << "Error opening debug files!\n";
+                    return 1;
+                }
+
+                std::cout << "[Debug] Output directory: " << debugDir << "\n";
+            }
         }
 
         // =========================================================================
@@ -194,11 +226,14 @@ int main(int argc, char *argv[])
         // =========================================================================
         for (size_t startIdx = 0; startIdx + FFT_SIZE <= totalSamples; startIdx += HOP_SIZE)
         {
-            debugFile << "\n==== STEP INFORMATION ====\n";
-            debugFile << "Frame StartIdx: " << startIdx << "\n";
-            debugFile << "Frame Time: "
-                      << static_cast<double>(startIdx) / audio.sampleRate
-                      << " seconds\n";
+            if (usingDebug)
+            {
+                debugFile << "\n==== STEP INFORMATION ====\n";
+                debugFile << "Frame StartIdx: " << startIdx << "\n";
+                debugFile << "Frame Time: "
+                          << static_cast<double>(startIdx) / audio.sampleRate
+                          << " seconds\n";
+            }
 
             std::vector<Complex> buffer(FFT_SIZE);
 
@@ -243,15 +278,18 @@ int main(int argc, char *argv[])
             {
                 auto rawChroma = frameChroma;
 
-                debugFile << "\n=== RAW CHROMA ===\n";
-                for (size_t i = 0; i < rawChroma.size(); i++)
+                if (usingDebug)
                 {
-                    debugFile << NOTE_NAMES[i] << ": "
-                              << rawChroma[i] << "\n";
-
-                    if (i % 12 == 11)
+                    debugFile << "\n=== RAW CHROMA ===\n";
+                    for (size_t i = 0; i < rawChroma.size(); i++)
                     {
-                        debugFile << "\n";
+                        debugFile << NOTE_NAMES[i] << ": "
+                                  << rawChroma[i] << "\n";
+
+                        if (i % 12 == 11)
+                        {
+                            debugFile << "\n";
+                        }
                     }
                 }
 
@@ -261,20 +299,23 @@ int main(int argc, char *argv[])
                     value = std::log1p(10.0 * value);
                 }
 
-                if (usingLogCompression) {
-                    debugFile << "\n=== LOG CHROMA ===\n";
-    
-                    for (size_t i = 0; i < logChroma.size(); i++)
+                if (usingLogCompression)
+                {
+                    if (usingDebug)
                     {
-                        debugFile << NOTE_NAMES[i] << ": "
-                                  << logChroma[i] << "\n";
-    
-                        if (i % 12 == 11)
+                        debugFile << "\n=== LOG CHROMA ===\n";
+
+                        for (size_t i = 0; i < logChroma.size(); i++)
                         {
-                            debugFile << "\n";
+                            debugFile << NOTE_NAMES[i] << ": "
+                                      << logChroma[i] << "\n";
+
+                            if (i % 12 == 11)
+                            {
+                                debugFile << "\n";
+                            }
                         }
                     }
-
                     for (int p = 0; p < frameChroma.size(); ++p)
                     {
                         frameChroma[p] = std::log1p(10.0 * frameChroma[p]);
@@ -297,27 +338,33 @@ int main(int argc, char *argv[])
                             frameChroma[i] /= norm;
                         }
                     }
-                    debugFile << "\n=== L2 NORMALIZED CHROMA ===\n";
-                    for (size_t i = 0; i < frameChroma.size(); i++)
+                    if (usingDebug)
                     {
-                        debugFile << NOTE_NAMES[i] << ": " << frameChroma[i] << std::endl;
-
-                        if (i % 12 == 11)
+                        debugFile << "\n=== L2 NORMALIZED CHROMA ===\n";
+                        for (size_t i = 0; i < frameChroma.size(); i++)
                         {
-                            debugFile << "\n";
+                            debugFile << NOTE_NAMES[i] << ": " << frameChroma[i] << std::endl;
+
+                            if (i % 12 == 11)
+                            {
+                                debugFile << "\n";
+                            }
                         }
                     }
                 }
             }
 
-            debugFile << "\n=== FRAME CHROMA (FINAL) ===\n";
-            for (size_t i = 0; i < frameChroma.size(); i++)
+            if (usingDebug) 
             {
-                debugFile << NOTE_NAMES[i] << ": " << frameChroma[i] << std::endl;
-
-                if (i % 12 == 11)
+                debugFile << "\n=== FRAME CHROMA (FINAL) ===\n";
+                for (size_t i = 0; i < frameChroma.size(); i++)
                 {
-                    debugFile << "\n";
+                    debugFile << NOTE_NAMES[i] << ": " << frameChroma[i] << std::endl;
+    
+                    if (i % 12 == 11)
+                    {
+                        debugFile << "\n";
+                    }
                 }
             }
 
@@ -347,7 +394,7 @@ int main(int argc, char *argv[])
                         return a.first > b.first;
                     });
 
-                if (!candidateScores.empty())
+                if (!candidateScores.empty() && usingDebug)
                 {
                     rawChord = candidateScores.front().second;
 
@@ -386,8 +433,12 @@ int main(int argc, char *argv[])
             frameTimes.push_back(static_cast<double>(startIdx) / audio.sampleRate);
         }
 
-        for (int i = 0; i < rawChords.size(); i++) {
-            rawChordsFile << rawChords[i] << "\n";
+        if (usingDebug)
+        {
+            for (int i = 0; i < rawChords.size(); i++)
+            {
+                rawChordsFile << rawChords[i] << "\n";
+            }
         }
 
         debugFile.close();

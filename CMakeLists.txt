@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(Chordec VERSION 0.3.2 LANGUAGES C CXX)
 
 # Add your revision or suffix here
-set(PROJECT_VERSION_REVISE "r1")
+set(PROJECT_VERSION_REVISE "r2")
 
 # Combine them into a full version string if you want an easy "x.y.z-r1" macro
 if(PROJECT_VERSION_REVISE STREQUAL "")

@@ -10,7 +10,7 @@ void printVersion() {
 }
 
 void printHelp() {
-    std::cout << "Usage: " << PROJECT_NAME << " [options]\n\n"
+    std::cout << "Usage: " << PROJECT_NAME << " [options] [debug]\n\n"
               << "Options:\n"
               << "  -v, --version        Show version info\n"
               << "  -h, --help           Show help message\n"
@@ -25,5 +25,8 @@ void printHelp() {
               << "  --signature=<string> Change Signature notes for chord names (default: 'default', options: 'sharp', 'flat') (alt. --sign=<string>)\n"
               << "  --disable-7th-chords Disable 7th chords in chord generator (alt. --disable-7th)\n"
               << "  --use-log            Enable Log Compression only (alt. --use-log-compression)\n"
-              << "  --use-l2             Enable L2 Normalization only (alt. --use-l2-normalization)\n";
+              << "  --use-l2             Enable L2 Normalization only (alt. --use-l2-normalization)\n"
+              << "Debug Options:\n"
+              << "  --debug              Enable Debugging mode\n"
+              << "  --debug-dir=<string> Output of debug file\n";
 }
