@@ -88,11 +88,20 @@ target_include_directories(chordec_pipeline PUBLIC
     libs
 )
 
+target_link_libraries(chordec_pipeline PRIVATE
+    chordec_math
+    chordec_gen
+)
+
 add_library(chordec_cli src/cli.cpp)
 
 target_include_directories(chordec_cli PUBLIC
     includes
     libs
+)
+
+target_link_libraries(chordec_cli PRIVATE
+    chordec_info
 )
 
 add_library(chordec_core src/core.cpp)
