@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-#include "libs/api.h"
+#include "../libs/api.h"
 
 /**
  * Struct to represent a chord event with start time, end time, and chord name
