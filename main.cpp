@@ -36,7 +36,8 @@ int main(int argc, char *argv[])
     bool using7thChords = true;
     bool usingLogCompression = false;
     bool usingL2Normalization = false;
-    bool usingDebug = false;
+    bool usingDebugMode = false;
+    bool usingVerboseMode = false;
     std::string signature = "default";
 
     // Loop through arguments
@@ -78,17 +79,28 @@ int main(int argc, char *argv[])
             if (!using7thChords)
             {
                 std::cerr << "For using weighted 7th chords, you need to enable 7th chords!" << std::endl;
+                printHelp();
                 return 1;
             }
             usingWeightedTemplates = true;
         }
         else if (arg == "--debug")
         {
-            usingDebug = true;
+            usingDebugMode = true;
         }
         else if (arg.starts_with("--debug-dir="))
         {
+            if (!usingDebugMode)
+            {
+                std::cerr << "Debug dir, should be in debug mode!\n";
+                printHelp();
+                return -1;
+            }
             debugDir = getValue(arg, 12);
+        }
+        else if (arg == "--verbose")
+        {
+            usingVerboseMode = true;
         }
         else if (arg == "--disable-7th-chords" || arg == "--disable-7th")
         {
@@ -163,19 +175,24 @@ int main(int argc, char *argv[])
     {
         audio = loadAudioFile(file);
 
-        std::cout << "--- Audio Loaded Successfully ---\n";
-        std::cout << "Sample Rate : " << audio.sampleRate << " Hz\n";
-        std::cout << "Channels    : " << audio.channels << "\n";
-        std::cout << "Total Sample: " << audio.samples.size() << " frame\n";
-        std::cout << "Duration    : " << static_cast<double>(audio.samples.size()) / audio.sampleRate << " seconds\n";
-        std::cout << "Format      : " << (audio.format == AudioFormat::WAV ? "WAV" : (audio.format == AudioFormat::FLAC ? "FLAC" : (audio.format == AudioFormat::MP3 ? "MP3" : "UNKNOWN"))) << "\n";
-        std::cout << "FFT Size    : " << FFT_SIZE << "\n";
-        std::cout << "HOP Size    : " << HOP_SIZE << "\n";
-        std::cout << "Signature   : " << signature << "\n";
-        std::cout << "Smoothing Window Size: " << SMOOTHING_WINDOW_SIZE << "\n";
-        std::cout << "Using Chroma Optimization: " << (usingChromaOptimization ? "Yes" : "No") << "\n";
-        std::cout << "Using Weighted 7th Chord Templates: " << (usingWeightedTemplates ? "Yes" : "No") << "\n";
-        std::cout << "---------------------------------\n";
+        std::cout << "Getting audio buffer ...\n" << std::endl;
+
+        if (usingVerboseMode) 
+        {
+            std::cout << "------- Audio Information -------\n";
+            std::cout << "Sample Rate : " << audio.sampleRate << " Hz\n";
+            std::cout << "Channels    : " << audio.channels << "\n";
+            std::cout << "Total Sample: " << audio.samples.size() << " frame\n";
+            std::cout << "Duration    : " << static_cast<double>(audio.samples.size()) / audio.sampleRate << " seconds\n";
+            std::cout << "Format      : " << (audio.format == AudioFormat::WAV ? "WAV" : (audio.format == AudioFormat::FLAC ? "FLAC" : (audio.format == AudioFormat::MP3 ? "MP3" : "UNKNOWN"))) << "\n";
+            std::cout << "FFT Size    : " << FFT_SIZE << "\n";
+            std::cout << "HOP Size    : " << HOP_SIZE << "\n";
+            std::cout << "Signature   : " << signature << "\n";
+            std::cout << "Smoothing Window Size: " << SMOOTHING_WINDOW_SIZE << "\n";
+            std::cout << "Using Chroma Optimization: " << (usingChromaOptimization ? "Yes" : "No") << "\n";
+            std::cout << "Using Weighted 7th Chord Templates: " << (usingWeightedTemplates ? "Yes" : "No") << "\n";
+            std::cout << "---------------------------------\n";
+        }
     }
     catch (const std::exception &e)
     {
@@ -199,9 +216,9 @@ int main(int argc, char *argv[])
         std::ofstream compareFile;
         std::ofstream rawChordsFile;
 
-        if (usingDebug)
+        if (usingDebugMode)
         {
-            if (usingDebug)
+            if (usingDebugMode)
             {
                 std::filesystem::create_directories(debugDir);
 
@@ -226,7 +243,7 @@ int main(int argc, char *argv[])
         // =========================================================================
         for (size_t startIdx = 0; startIdx + FFT_SIZE <= totalSamples; startIdx += HOP_SIZE)
         {
-            if (usingDebug)
+            if (usingDebugMode)
             {
                 debugFile << "\n==== STEP INFORMATION ====\n";
                 debugFile << "Frame StartIdx: " << startIdx << "\n";
@@ -278,7 +295,7 @@ int main(int argc, char *argv[])
             {
                 auto rawChroma = frameChroma;
 
-                if (usingDebug)
+                if (usingDebugMode)
                 {
                     debugFile << "\n=== RAW CHROMA ===\n";
                     for (size_t i = 0; i < rawChroma.size(); i++)
@@ -301,7 +318,7 @@ int main(int argc, char *argv[])
 
                 if (usingLogCompression)
                 {
-                    if (usingDebug)
+                    if (usingDebugMode)
                     {
                         debugFile << "\n=== LOG CHROMA ===\n";
 
@@ -338,7 +355,7 @@ int main(int argc, char *argv[])
                             frameChroma[i] /= norm;
                         }
                     }
-                    if (usingDebug)
+                    if (usingDebugMode)
                     {
                         debugFile << "\n=== L2 NORMALIZED CHROMA ===\n";
                         for (size_t i = 0; i < frameChroma.size(); i++)
@@ -354,7 +371,7 @@ int main(int argc, char *argv[])
                 }
             }
 
-            if (usingDebug) 
+            if (usingDebugMode) 
             {
                 debugFile << "\n=== FRAME CHROMA (FINAL) ===\n";
                 for (size_t i = 0; i < frameChroma.size(); i++)
@@ -394,36 +411,38 @@ int main(int argc, char *argv[])
                         return a.first > b.first;
                     });
 
-                if (!candidateScores.empty() && usingDebug)
+                if (!candidateScores.empty())
                 {
                     rawChord = candidateScores.front().second;
-
-                    debugFile << "\n=== COSINE SIMILARITY ===\n";
-                    debugFile << "Score: "
-                              << candidateScores.front().first << "\n";
-                    debugFile << "Raw Chord: " << rawChord << "\n";
-
-                    compareFile
-                        << "\nFrame StartIdx: " << startIdx
-                        << "\nFrame Time: "
-                        << static_cast<double>(startIdx) / audio.sampleRate
-                        << " seconds\n";
-
-                    compareFile << "=== TOP 5 CHORD CANDIDATES ===\n";
-
-                    for (size_t i = 0;
-                         i < std::min(size_t(5), candidateScores.size());
-                         ++i)
+                    
+                    if (usingDebugMode) 
                     {
-
+                        debugFile << "\n=== COSINE SIMILARITY ===\n";
+                        debugFile << "Score: "
+                                  << candidateScores.front().first << "\n";
+                        debugFile << "Raw Chord: " << rawChord << "\n";
+    
                         compareFile
-                            << i + 1 << ". "
-                            << candidateScores[i].second
-                            << " : "
-                            << std::fixed
-                            << std::setprecision(6)
-                            << candidateScores[i].first
-                            << "\n";
+                            << "\nFrame StartIdx: " << startIdx
+                            << "\nFrame Time: "
+                            << static_cast<double>(startIdx) / audio.sampleRate
+                            << " seconds\n";
+    
+                        compareFile << "=== TOP 5 CHORD CANDIDATES ===\n";
+                        for (size_t i = 0;
+                             i < std::min(size_t(5), candidateScores.size());
+                             ++i)
+                        {
+    
+                            compareFile
+                                << i + 1 << ". "
+                                << candidateScores[i].second
+                                << " : "
+                                << std::fixed
+                                << std::setprecision(6)
+                                << candidateScores[i].first
+                                << "\n";
+                        }
                     }
                 }
             }
@@ -433,7 +452,7 @@ int main(int argc, char *argv[])
             frameTimes.push_back(static_cast<double>(startIdx) / audio.sampleRate);
         }
 
-        if (usingDebug)
+        if (usingDebugMode)
         {
             for (int i = 0; i < rawChords.size(); i++)
             {
@@ -448,9 +467,12 @@ int main(int argc, char *argv[])
         // =========================================================================
         // PASS 2: Centered Smoothing & Timeline Generation
         // =========================================================================
-        std::cout << "\n--- CHORD TIMELINE DETECTOR (CENTERED SMOOTHED) ---\n";
-        std::cout << "Time (s)\tDetected Chord\n";
-        std::cout << "--------------------------------------------------\n";
+        if (usingVerboseMode)
+        {
+            std::cout << "\n--- CHORD TIMELINE DETECTOR (CENTERED SMOOTHED) ---\n";
+            std::cout << "Time (s)\tDetected Chord\n";
+            std::cout << "--------------------------------------------------\n";
+        }
 
         std::vector<ChordEvent> chordEvents;
         std::string lastPrintedChord = "";
@@ -458,7 +480,7 @@ int main(int argc, char *argv[])
 
         for (size_t i = 0; i < rawChords.size(); ++i)
         {
-            // Ambil window simetris di sekitar frame i (melihat ke belakang DAN ke depan)
+            // Take a symmetrical window around frame i (looking back AND forward)
             int startWin = std::max(0, static_cast<int>(i) - halfWindow);
             int endWin = std::min(static_cast<int>(rawChords.size()) - 1, static_cast<int>(i) + halfWindow);
 
@@ -469,7 +491,10 @@ int main(int argc, char *argv[])
             // Print to terminal
             if (smoothedChord != lastPrintedChord)
             {
-                std::cout << "[" << currentTime << "s]\t\t" << smoothedChord << "\n";
+                if (usingVerboseMode) 
+                {
+                    std::cout << "[" << currentTime << "s]\t\t" << smoothedChord << "\n";
+                }
                 lastPrintedChord = smoothedChord;
 
                 if (!chordEvents.empty())
@@ -484,14 +509,14 @@ int main(int argc, char *argv[])
             }
         }
 
-        // Set endTime untuk chord terakhir sesuai durasi total audio
+        // Set endTime for last chords
         if (!chordEvents.empty())
         {
             chordEvents.back().endTime = static_cast<double>(totalSamples) / audio.sampleRate;
         }
 
         // =========================================================================
-        // EXPORT TO SRT (Hanya dipanggil SEKALI di luar loop)
+        // EXPORT TO SRT
         // =========================================================================
         if (!outputFile.empty() && !chordEvents.empty())
         {

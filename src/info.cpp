@@ -28,5 +28,6 @@ void printHelp() {
               << "  --use-l2             Enable L2 Normalization only (alt. --use-l2-normalization)\n"
               << "Debug Options:\n"
               << "  --debug              Enable Debugging mode\n"
-              << "  --debug-dir=<string> Output of debug file\n";
+              << "  --debug-dir=<string> Output of debug file\n"
+              << "  --verbose            Showing all information";
 }
