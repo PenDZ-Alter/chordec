@@ -178,6 +178,7 @@ int main(int argc, char *argv[])
 
         std::cout << "Processing audio frames...\n";
 
+        // Debug file
         std::ofstream debugFile("/home/abx41/code/chordec/debug/chroma.txt");
         std::ofstream compareFile("/home/abx41/code/chordec/debug/candidates.txt");
         std::ofstream rawChordsFile("/home/abx41/code/chordec/debug/raw_chords.txt");
