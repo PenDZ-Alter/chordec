@@ -35,7 +35,7 @@ ChordTemplate createTemplate(int root, const std::string& suffix, const std::vec
  * @param use7th Using the 7th chords
  * @return Vector of ChordTemplate structs
  */
-CHORDEC_API std::vector<ChordTemplate> generateChordTemplates(std::string& sign, bool use7th);
+CHORDEC_API std::vector<ChordTemplate> generateChordTemplates(const std::string& sign, bool use7th);
 
 /**
  * Get the most frequently occurring chord in a history vector
@@ -71,6 +71,6 @@ CHORDEC_API ChordTemplate createWeightedTemplate(int root, const std::string& su
  * @param use7th Using the 7th Chords
  * @return Vector of ChordTemplate structs with weighted profiles
  */
-CHORDEC_API std::vector<ChordTemplate> generateWeightedChordTemplates(double weighted7thSize, std::string& sign, bool use7th);
+CHORDEC_API std::vector<ChordTemplate> generateWeightedChordTemplates(double weighted7thSize, const std::string& sign, bool use7th);
 
 #endif

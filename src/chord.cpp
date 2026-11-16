@@ -81,7 +81,7 @@ ChordTemplate createWeightedTemplate(int root, const std::string& suffix, const 
     return tmpl;
 }
 
-std::vector<ChordTemplate> generateChordTemplates(std::string& sign, bool use7th) 
+std::vector<ChordTemplate> generateChordTemplates(const std::string& sign, bool use7th) 
 {
     std::vector<ChordTemplate> templates;
 
@@ -105,7 +105,7 @@ std::vector<ChordTemplate> generateChordTemplates(std::string& sign, bool use7th
     return templates;
 }
 
-std::vector<ChordTemplate> generateWeightedChordTemplates(double weighted7thSize, std::string& sign, bool use7th) {
+std::vector<ChordTemplate> generateWeightedChordTemplates(double weighted7thSize, const std::string& sign, bool use7th) {
     std::vector<ChordTemplate> templates;
 
     for (int root = 0; root < 12; ++root) {

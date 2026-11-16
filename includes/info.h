@@ -15,6 +15,6 @@ CHORDEC_API void printVersion();
  * Print the help message for the Chordec project
  * This function provides usage instructions and available command-line options.
  */
-void printHelp();
+CHORDEC_API void printHelp();
 
 #endif
