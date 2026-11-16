@@ -414,7 +414,7 @@ int main(int argc, char *argv[])
             std::string smoothedChord = getMajorityChord(windowSlice);
             double currentTime = frameTimes[i];
 
-            // Cetak ke terminal & catat event jika terjadi perubahan chord
+            // Print to terminal
             if (smoothedChord != lastPrintedChord)
             {
                 std::cout << "[" << currentTime << "s]\t\t" << smoothedChord << "\n";
