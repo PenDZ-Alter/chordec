@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <sstream>
 
-#include "headers/export.h"
+#include "../includes/export.h"
 
 // Helper for formatting seconds to SRT format (HH:MM:SS,mmm)
 std::string formatSRTTime(double seconds) {

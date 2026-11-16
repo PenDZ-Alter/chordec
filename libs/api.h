@@ -1,4 +1,4 @@
-// src/libs/api.h
+// libs/api.h
 #ifndef API_H
 #define API_H
 

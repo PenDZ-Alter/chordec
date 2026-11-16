@@ -15,7 +15,7 @@ option(BUILD_TESTS "Build for test only" OFF)
 option(BUILD_MAIN "Build main application" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries instead of static" OFF)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Hide symbol as default if using shared libraries (Best Practice)
@@ -36,7 +36,7 @@ foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
 endforeach()
 
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/libs/version.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/libs/version.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/generated/version.h"
 )
 
@@ -55,7 +55,7 @@ endif()
 # target_compile_definitions(test_parser PRIVATE SAMPLE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Include directories
-# include_directories(src src/parser)
+# include_directories(src libs/parser include/)
 
 # --- Target Libraries ---
 # Note: Jangan tentukan STATIC/SHARED di sini. 
@@ -63,19 +63,19 @@ endif()
 
 # Create static library
 add_library(chordec_parser src/parser.cpp)
-target_include_directories(chordec_parser PUBLIC src src/parser)
+target_include_directories(chordec_parser PUBLIC src libs/parser)
 
 add_library(chordec_gen src/chord.cpp)
-target_include_directories(chordec_gen PUBLIC src)
+target_include_directories(chordec_gen PUBLIC src includes libs)
 
 add_library(chordec_math src/ca_math.cpp)
-target_include_directories(chordec_math PUBLIC src)
+target_include_directories(chordec_math PUBLIC src includes libs)
 
 add_library(chordec_info src/info.cpp)
-target_include_directories(chordec_info PUBLIC src)
+target_include_directories(chordec_info PUBLIC src includes libs)
 
 add_library(chordec_export src/export.cpp)
-target_include_directories(chordec_export PUBLIC src)
+target_include_directories(chordec_export PUBLIC src includes libs)
 
 if (BUILD_MAIN)
     add_executable(chordec main.cpp)
@@ -94,7 +94,7 @@ if (BUILD_TESTS)
         add_executable(${TEST_NAME} ${TEST_SRC})
         
         # 2. Link with the chordec_parser library
-        target_link_libraries(${TEST_NAME} PRIVATE chordec_parser chordec_gen chordec_math chordec_info)
+        target_link_libraries(${TEST_NAME} PRIVATE chordec_parser chordec_gen chordec_math chordec_info chordec_export)
         target_compile_definitions(${TEST_NAME} PRIVATE SAMPLE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
         
         # 3. Register to CTest

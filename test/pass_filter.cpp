@@ -7,7 +7,7 @@
 #include "src/parser.cpp"
 #include "src/chord.cpp"
 #include "src/ca_math.cpp"
-#include "src/headers/params.h"
+#include "include/params.h"
 #include "src/info.cpp"
 #include "src/export.cpp"
 

@@ -1,4 +1,4 @@
-// src/version.h.in
+// libs/version.h.in
 #ifndef VERSION_H
 #define VERSION_H
 
