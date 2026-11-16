@@ -68,21 +68,16 @@ int main(int argc, char *argv[])
         }
         else if (arg.starts_with("--fft-size="))
         {
+            if (FFT_SIZE < 0)
+            {
+                std::cerr << "FFT Size must bigger than 0! It's really recommended to use 2^n result\n";
+                return 1;
+            }
             FFT_SIZE = std::stoul(getValue(arg, 11));
         }
         else if (arg == "--use-chroma")
         {
             usingChromaOptimization = true;
-        }
-        else if (arg == "--use-weighted")
-        {
-            if (!using7thChords)
-            {
-                std::cerr << "For using weighted 7th chords, you need to enable 7th chords!" << std::endl;
-                printHelp();
-                return 1;
-            }
-            usingWeightedTemplates = true;
         }
         else if (arg == "--debug")
         {
@@ -94,7 +89,7 @@ int main(int argc, char *argv[])
             {
                 std::cerr << "Debug dir, should be in debug mode!\n";
                 printHelp();
-                return -1;
+                return 1;
             }
             debugDir = getValue(arg, 12);
         }
@@ -106,6 +101,16 @@ int main(int argc, char *argv[])
         {
             using7thChords = false;
         }
+        else if (arg == "--use-weighted")
+        {
+            if (!using7thChords)
+            {
+                std::cerr << "For using weighted 7th chords, you need to enable 7th chords!" << std::endl;
+                printHelp();
+                return 1;
+            }
+            usingWeightedTemplates = true;
+        }
         else if (arg == "--use-log-compression" || arg == "--use-log")
         {
             usingLogCompression = true;
@@ -116,6 +121,11 @@ int main(int argc, char *argv[])
         }
         else if (arg.starts_with("--hop-size="))
         {
+            if (HOP_SIZE < 0)
+            {
+                std::cerr << "HOP Size must bigger than 0! It's really recommended to use 2^n result\n";
+                return 1;
+            }
             HOP_SIZE = std::stoul(getValue(arg, 11));
         }
         else if (arg.starts_with("--weight=") || arg.starts_with("-w="))
@@ -125,6 +135,10 @@ int main(int argc, char *argv[])
             if (weightValue < 0.0 || weightValue > 1.0)
             {
                 std::cerr << "Error: Weight value must be between 0.0 and 1.0\n";
+                return 1;
+            } else if (!usingWeightedTemplates || !using7thChords)
+            {
+                std::cerr << "Error: Weighted 7th and 7th chords must be enabled!\n";
                 return 1;
             }
             weighted7thSize = weightValue;
