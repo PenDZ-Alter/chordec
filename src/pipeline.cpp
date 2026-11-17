@@ -317,9 +317,6 @@ std::vector<ChordEvent> runAnalysisPipeline(
     const AudioBuffer &audio,
     const CliOptions &options)
 {
-    // Generate chord templates
-    auto chordTemplates = options.usingWeightedTemplates ? generateWeightedChordTemplates(options.weighted7thSize, options.signature, options.using7thChords) : generateChordTemplates(options.signature, options.using7thChords);
-
     // Initialize rawChords and frameTimes
     std::vector<std::string> rawChords;
     std::vector<double> frameTimes;
