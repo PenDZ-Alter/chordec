@@ -6,13 +6,8 @@
 #include "params.h"
 #include "ca_math.h"
 
-/**
- * Analysis Pipeline Runner
- *
- * @param audio Audio buffer
- * @param options CLI Options
- * @return Vector of Chord Event
- */
+
+
 std::vector<ChordEvent> runAnalysisPipeline(
     const AudioBuffer &audio,
     const CliOptions &options)
@@ -267,55 +262,55 @@ std::vector<ChordEvent> runAnalysisPipeline(
 
     // PASS 2
     // =========================================================================
-        // PASS 2: Centered Smoothing & Timeline Generation
-        // =========================================================================
-        if (options.usingVerboseMode)
+    // PASS 2: Centered Smoothing & Timeline Generation
+    // =========================================================================
+    if (options.usingVerboseMode)
+    {
+        std::cout << "\n--- CHORD TIMELINE DETECTOR (CENTERED SMOOTHED) ---\n";
+        std::cout << "Time (s)\tDetected Chord\n";
+        std::cout << "--------------------------------------------------\n";
+    }
+
+    std::vector<ChordEvent> chordEvents;
+    std::string lastPrintedChord = "";
+    int halfWindow = static_cast<int>(options.smoothingWindowSize / 2);
+
+    for (size_t i = 0; i < rawChords.size(); ++i)
+    {
+        // Take a symmetrical window around frame i (looking back AND forward)
+        int startWin = std::max(0, static_cast<int>(i) - halfWindow);
+        int endWin = std::min(static_cast<int>(rawChords.size()) - 1, static_cast<int>(i) + halfWindow);
+
+        std::vector<std::string> windowSlice(rawChords.begin() + startWin, rawChords.begin() + endWin + 1);
+        std::string smoothedChord = getMajorityChord(windowSlice);
+        double currentTime = frameTimes[i];
+
+        // Print to terminal
+        if (smoothedChord != lastPrintedChord)
         {
-            std::cout << "\n--- CHORD TIMELINE DETECTOR (CENTERED SMOOTHED) ---\n";
-            std::cout << "Time (s)\tDetected Chord\n";
-            std::cout << "--------------------------------------------------\n";
-        }
-
-        std::vector<ChordEvent> chordEvents;
-        std::string lastPrintedChord = "";
-        int halfWindow = static_cast<int>(options.smoothingWindowSize / 2);
-
-        for (size_t i = 0; i < rawChords.size(); ++i)
-        {
-            // Take a symmetrical window around frame i (looking back AND forward)
-            int startWin = std::max(0, static_cast<int>(i) - halfWindow);
-            int endWin = std::min(static_cast<int>(rawChords.size()) - 1, static_cast<int>(i) + halfWindow);
-
-            std::vector<std::string> windowSlice(rawChords.begin() + startWin, rawChords.begin() + endWin + 1);
-            std::string smoothedChord = getMajorityChord(windowSlice);
-            double currentTime = frameTimes[i];
-
-            // Print to terminal
-            if (smoothedChord != lastPrintedChord)
+            if (options.usingVerboseMode)
             {
-                if (options.usingVerboseMode) 
-                {
-                    std::cout << "[" << currentTime << "s]\t\t" << smoothedChord << "\n";
-                }
-                lastPrintedChord = smoothedChord;
+                std::cout << "[" << currentTime << "s]\t\t" << smoothedChord << "\n";
+            }
+            lastPrintedChord = smoothedChord;
 
-                if (!chordEvents.empty())
-                {
-                    chordEvents.back().endTime = currentTime;
-                }
+            if (!chordEvents.empty())
+            {
+                chordEvents.back().endTime = currentTime;
+            }
 
-                if (smoothedChord != "N/C")
-                {
-                    chordEvents.push_back({currentTime, 0.0, smoothedChord});
-                }
+            if (smoothedChord != "N/C")
+            {
+                chordEvents.push_back({currentTime, 0.0, smoothedChord});
             }
         }
+    }
 
-        // Set endTime for last chords
-        if (!chordEvents.empty())
-        {
-            chordEvents.back().endTime = static_cast<double>(totalSamples) / audio.sampleRate;
-        }
+    // Set endTime for last chords
+    if (!chordEvents.empty())
+    {
+        chordEvents.back().endTime = static_cast<double>(totalSamples) / audio.sampleRate;
+    }
 
     // Return chordEvents
     return chordEvents;
