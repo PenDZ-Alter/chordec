@@ -6,21 +6,11 @@
 #include "params.h"
 #include "ca_math.h"
 
-
-
-std::vector<ChordEvent> runAnalysisPipeline(
-    const AudioBuffer &audio,
-    const CliOptions &options)
+PipelinePass1 runPass1(
+    const CliOptions& options, 
+    const AudioBuffer& audio)
 {
-    // Generate chord templates
-    auto chordTemplates = options.usingWeightedTemplates ? generateWeightedChordTemplates(options.weighted7thSize, options.signature, options.using7thChords) : generateChordTemplates(options.signature, options.using7thChords);
-    size_t totalSamples = audio.samples.size();
-
-    // Initialize rawChords and frameTimes
-    std::vector<std::string> rawChords;
-    std::vector<double> frameTimes;
-
-    std::cout << "Processing audio frames...\n";
+    PipelinePass1 rawData;
 
     // Debug file
     std::ofstream debugFile;
@@ -45,10 +35,9 @@ std::vector<ChordEvent> runAnalysisPipeline(
         std::cout << "[Debug] Output directory: " << options.debugDir << "\n";
     }
 
-    // PASS 1
-    // =========================================================================
-    // PASS 1: Extract FFT, Chroma, and Raw Chords per Frame
-    // =========================================================================
+    auto chordTemplates = options.usingWeightedTemplates ? generateWeightedChordTemplates(options.weighted7thSize, options.signature, options.using7thChords) : generateChordTemplates(options.signature, options.using7thChords);
+    size_t totalSamples = audio.samples.size();
+
     for (size_t startIdx = 0; startIdx + options.fftSize <= totalSamples; startIdx += options.hopSize)
     {
         if (options.usingDebugMode)
@@ -256,24 +245,21 @@ std::vector<ChordEvent> runAnalysisPipeline(
         }
 
         // Save RAW result and its time
-        rawChords.push_back(rawChord);
-        frameTimes.push_back(static_cast<double>(startIdx) / audio.sampleRate);
+        rawData.rawChords.push_back(rawChord);
+        rawData.frameTimes.push_back(static_cast<double>(startIdx) / audio.sampleRate);
     }
+}
 
-    // PASS 2
-    // =========================================================================
-    // PASS 2: Centered Smoothing & Timeline Generation
-    // =========================================================================
-    if (options.usingVerboseMode)
-    {
-        std::cout << "\n--- CHORD TIMELINE DETECTOR (CENTERED SMOOTHED) ---\n";
-        std::cout << "Time (s)\tDetected Chord\n";
-        std::cout << "--------------------------------------------------\n";
-    }
-
+std::vector<ChordEvent> runPass2(
+    const CliOptions& options, 
+    const AudioBuffer& audio, 
+    std::vector<std::string> rawChords, 
+    std::vector<double> frameTimes)
+{
     std::vector<ChordEvent> chordEvents;
     std::string lastPrintedChord = "";
     int halfWindow = static_cast<int>(options.smoothingWindowSize / 2);
+    size_t totalSamples = audio.samples.size();
 
     for (size_t i = 0; i < rawChords.size(); ++i)
     {
@@ -311,6 +297,41 @@ std::vector<ChordEvent> runAnalysisPipeline(
     {
         chordEvents.back().endTime = static_cast<double>(totalSamples) / audio.sampleRate;
     }
+}
+
+std::vector<ChordEvent> runAnalysisPipeline(
+    const AudioBuffer &audio,
+    const CliOptions &options)
+{
+    // Generate chord templates
+    auto chordTemplates = options.usingWeightedTemplates ? generateWeightedChordTemplates(options.weighted7thSize, options.signature, options.using7thChords) : generateChordTemplates(options.signature, options.using7thChords);
+
+    // Initialize rawChords and frameTimes
+    std::vector<std::string> rawChords;
+    std::vector<double> frameTimes;
+
+    std::cout << "Processing audio frames...\n";
+
+    // PASS 1
+    // =========================================================================
+    // PASS 1: Extract FFT, Chroma, and Raw Chords per Frame
+    // =========================================================================
+    auto rawData = runPass1(options, audio);
+    rawChords = rawData.rawChords;
+    frameTimes = rawData.frameTimes;
+
+    // PASS 2
+    // =========================================================================
+    // PASS 2: Centered Smoothing & Timeline Generation
+    // =========================================================================
+    if (options.usingVerboseMode)
+    {
+        std::cout << "\n--- CHORD TIMELINE DETECTOR (CENTERED SMOOTHED) ---\n";
+        std::cout << "Time (s)\tDetected Chord\n";
+        std::cout << "--------------------------------------------------\n";
+    }
+    
+    auto chordEvents = runPass2(options, audio, rawChords, frameTimes);
 
     // Return chordEvents
     return chordEvents;
