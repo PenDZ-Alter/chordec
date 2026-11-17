@@ -21,7 +21,7 @@ void printHelp() {
               << "  -swz=<int>           Smoothing window size (default: 20)\n"
               << "  --use-weighted       Using weighted 7th chord templates (default: no)\n"
               << "  --weight=<float>     Weight for 7th interval in weighted templates (0.0 to 1.0, default: 0.6) (alt. -w=<float>)\n"
-              << "  --tuning=, -t=       Change tuning from A4 Frequency Reference (default: standard tuning (440 Hz))\n"
+              << "  --tuning=<float>     Change tuning from A4 Frequency Reference (default: standard tuning (440 Hz)) (alt. -t=<float>)\n"
               << "  --signature=<string> Change Signature notes for chord names (default: 'default', options: 'sharp', 'flat') (alt. --sign=<string>)\n"
               << "  --disable-7th-chords Disable 7th chords in chord generator (alt. --disable-7th)\n"
               << "  --use-log            Enable Log Compression only (alt. --use-log-compression)\n"
