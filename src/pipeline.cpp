@@ -248,6 +248,8 @@ PipelinePass1 runPass1(
         rawData.rawChords.push_back(rawChord);
         rawData.frameTimes.push_back(static_cast<double>(startIdx) / audio.sampleRate);
     }
+
+    return rawData;
 }
 
 std::vector<ChordEvent> runPass2(
@@ -297,6 +299,8 @@ std::vector<ChordEvent> runPass2(
     {
         chordEvents.back().endTime = static_cast<double>(totalSamples) / audio.sampleRate;
     }
+
+    return chordEvents;
 }
 
 std::vector<ChordEvent> runAnalysisPipeline(
