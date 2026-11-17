@@ -249,6 +249,16 @@ PipelinePass1 runPass1(
         rawData.frameTimes.push_back(static_cast<double>(startIdx) / audio.sampleRate);
     }
 
+    if (options.usingDebugMode) 
+    {
+        rawChordsFile << "=== RAW CHORDS ===\n";
+
+        for (int i = 0; i < rawData.rawChords.size(); i++)
+        {
+            rawChordsFile << rawData.rawChords[i] << std::endl;
+        }
+    }
+
     return rawData;
 }
 
