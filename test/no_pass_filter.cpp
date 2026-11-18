@@ -1,17 +1,14 @@
 #include <iostream>
 
-#include "src/parser.cpp"
-#include "src/chord.cpp"
-#include "src/ca_math.cpp"
-#include "include/params.h"
-#include "src/info.cpp"
-#include "src/export.cpp"
-
-#include "version.h"
+#include "parser.h"
+#include "chord.h"
+#include "ca_math.h"
+#include "params.h"
+#include "export.h"
 
 int main(int argc, char *argv[])
 {
-    std::string file;
+    std::string file = (argc > 1) ? argv[1] : std::string(SAMPLE_DIR) + "/sample.flac";
     std::string outputFile = "";
     // std::string currentFilePath = (argc > 1) ? argv[1] : std::string(SAMPLE_DIR);
     // std::string currentFilePath = (argc > 1) ? argv[1] : "";
@@ -26,92 +23,9 @@ int main(int argc, char *argv[])
     bool usingChromaOptimization = false;
     bool usingWeightedTemplates = false;
 
-    // Loop through arguments
-    for (int i = 1; i < argc; ++i)
-    {
-        std::string_view arg = argv[i];
-
-        if (arg == "-v" || arg == "--version")
-        {
-            printVersion();
-            return 0;
-        }
-        else if (arg == "-h" || arg == "--help")
-        {
-            printHelp();
-            return 0;
-        }
-        else if (arg.rfind("--path=", 0) == 0)
-        {
-            std::string_view path = arg.substr(7);
-            file = std::string(path);
-            std::cout << "File: " << file << std::endl;
-        }
-        else if (arg.rfind("-p=", 0) == 0)
-        {
-            std::string_view path = arg.substr(3);
-            file = std::string(path);
-        }
-        else if (arg.rfind("--fft-size=", 0) == 0)
-        {
-            std::string_view sizeStr = arg.substr(11);
-            FFT_SIZE = std::stoul(std::string(sizeStr));
-        }
-        else if (arg.rfind("--use-chroma", 0) == 0)
-        {
-            usingChromaOptimization = true;
-        }
-        else if (arg.rfind("--use-weighted", 0) == 0)
-        {
-            usingWeightedTemplates = true;
-        }
-        else if (arg.rfind("--weight=", 0) == 0)
-        {
-            std::string_view weightStr = arg.substr(9);
-            double weightValue = std::stod(std::string(weightStr));
-            if (weightValue < 0.0 || weightValue > 1.0)
-            {
-                std::cerr << "Error: Weight value must be between 0.0 and 1.0\n";
-                return 1;
-            }
-            weighted7thSize = weightValue;
-        }
-        else if (arg.rfind("-w=", 0) == 0)
-        {
-            std::string_view weightStr = arg.substr(3);
-            double weightValue = std::stod(std::string(weightStr));
-            if (weightValue < 0.0 || weightValue > 1.0)
-            {
-                std::cerr << "Error: Weight value must be between 0.0 and 1.0\n";
-                return 1;
-            }
-            weighted7thSize = weightValue;
-        }
-        else if (arg.rfind("-swz=", 0) == 0)
-        {
-            std::string_view sizeStr = arg.substr(5);
-            SMOOTHING_WINDOW_SIZE = std::stoul(std::string(sizeStr));
-        }
-        else if (arg.rfind("--output=", 0) == 0)
-        {
-            outputFile = std::string(arg.substr(9));
-        }
-        else if (arg.rfind("-o=", 0) == 0)
-        {
-            outputFile = std::string(arg.substr(3));
-        }
-        else
-        {
-            std::cerr << "Unknown option: " << arg << "\n";
-            printHelp();
-            return 1;
-        }
-    }
-
     if (file.empty())
     {
         std::cerr << "Error: No audio file specified. Use --path=<file> or -p=<file> to specify the audio file.\n";
-        printHelp();
         return 1;
     }
 
@@ -162,7 +76,7 @@ int main(int argc, char *argv[])
 
     try
     {
-        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(weighted7thSize) : generateChordTemplates();
+        auto chordTemplates = usingWeightedTemplates ? generateWeightedChordTemplates(weighted7thSize, "default", true) : generateChordTemplates("default", true);
 
         // const size_t FFT_SIZE = 8192;
         // const size_t HOP_SIZE = 2048; // Overlap (~0.04s per hop in 48kHz)
@@ -203,7 +117,7 @@ int main(int argc, char *argv[])
                 double freq = static_cast<double>(i) * audio.sampleRate / FFT_SIZE;
                 double magnitude = std::abs(buffer[i]);
 
-                int pitchClass = freqToPitchClass(freq);
+                int pitchClass = freqToPitchClass(freq, 440.0);
                 if (usingChromaOptimization)
                 {
                     // Apply a simple threshold to filter out low-magnitude frequencies

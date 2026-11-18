@@ -1,16 +1,16 @@
 #include <iostream>
 
-#include "../src/parser.cpp"
-#include "../src/chord.cpp"
-#include "../src/ca_math.cpp"
-#include "../include/params.h"
+#include "parser.h"
+#include "chord.h"
+#include "ca_math.h"
+#include "params.h"
 
 int main(int argc, char* argv[]) {
     std::string filePath = (argc > 1) ? argv[1] : std::string(SAMPLE_DIR) + "/sample.flac";
 
     try {
         AudioBuffer audio = loadAudioFile(filePath);
-        auto chordTemplates = generateChordTemplates();
+        auto chordTemplates = generateChordTemplates("default", true);
 
         const size_t FFT_SIZE = 8192; // Larger window for sharper low frequency resolution
         const size_t HOP_SIZE = 4096; // Shift window
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
                 double freq = static_cast<double>(i) * audio.sampleRate / FFT_SIZE;
                 double magnitude = std::abs(buffer[i]);
 
-                int pitchClass = freqToPitchClass(freq);
+                int pitchClass = freqToPitchClass(freq, 440.0);
                 if (pitchClass >= 0) {
                     frameChroma[pitchClass] += magnitude;
                 }
