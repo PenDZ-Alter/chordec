@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
-project(Chordec VERSION 0.3.2 LANGUAGES C CXX)
+project(Chordec VERSION 0.3.3 LANGUAGES C CXX)
 
-set(PROJECT_VERSION_REVISE "r6")
+set(PROJECT_VERSION_REVISE "r1")
 
 if(PROJECT_VERSION_REVISE STREQUAL "")
     set(PROJECT_FULL_VERSION "${PROJECT_VERSION}")
@@ -9,8 +9,9 @@ else()
     set(PROJECT_FULL_VERSION "${PROJECT_VERSION}-${PROJECT_VERSION_REVISE}")
 endif()
 
-option(BUILD_TESTS "Build tests" OFF)
+option(BUILD_TEST "Build tests" OFF)
 option(BUILD_MAIN "Build main application" OFF)
+option(BUILD_EXPERIMENTAL "Build with experimental analysis" OFF)
 option(BUILD_SHARED_LIBS "Build shared libraries instead of static" OFF)
 
 set(CMAKE_CXX_STANDARD 23)
@@ -29,9 +30,14 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/generated/version.h"
 )
 
-if(NOT BUILD_MAIN AND NOT BUILD_TESTS)
+if (BUILD_EXPERIMENTAL AND NOT BUILD_MAIN)
+    message(FATAL_ERROR "If you want to use experimental, you need to build main too!")
+endif()
+
+if(NOT BUILD_MAIN AND NOT BUILD_TEST)
     message(FATAL_ERROR "Must build either main or tests.")
 endif()
+
 
 # ==========================================
 # Static build definition
@@ -40,6 +46,23 @@ endif()
 if(NOT BUILD_SHARED_LIBS)
     add_compile_definitions(CHORDEC_STATIC_BUILD)
 endif()
+
+# ==========================================
+# Function for configure API
+# ==========================================
+function(chordec_configure_api TARGET_NAME)
+
+    if(BUILD_SHARED_LIBS)
+        target_compile_definitions(${TARGET_NAME}
+            PRIVATE CHORDEC_EXPORTS
+        )
+    else()
+        target_compile_definitions(${TARGET_NAME}
+            PUBLIC CHORDEC_STATIC_BUILD
+        )
+    endif()
+
+endfunction()
 
 # ==========================================
 # Core libraries
@@ -88,7 +111,7 @@ target_include_directories(chordec_pipeline PUBLIC
     libs
 )
 
-target_link_libraries(chordec_pipeline PRIVATE
+target_link_libraries(chordec_pipeline PUBLIC
     chordec_math
     chordec_gen
 )
@@ -123,6 +146,93 @@ target_link_libraries(chordec_core PRIVATE
     chordec_pipeline
 )
 
+chordec_configure_api(chordec_parser)
+chordec_configure_api(chordec_gen)
+chordec_configure_api(chordec_math)
+chordec_configure_api(chordec_info)
+chordec_configure_api(chordec_export)
+chordec_configure_api(chordec_pipeline)
+chordec_configure_api(chordec_cli)
+chordec_configure_api(chordec_core)
+
+
+# ==========================================
+# Experimental Libraries
+# ==========================================
+
+if(BUILD_EXPERIMENTAL)
+
+    add_library(chordec_exp_chroma
+        src/experimental/chroma.cpp
+    )
+
+    target_include_directories(chordec_exp_chroma PUBLIC
+        includes/experimental
+        libs
+    )
+
+    add_library(chordec_exp_pipeline
+        src/experimental/pipeline.cpp
+    )
+
+    target_include_directories(chordec_exp_pipeline PUBLIC
+        includes/experimental
+        libs
+    )
+
+    add_library(chordec_exp_cqt
+        src/experimental/cqt.cpp
+    )
+
+    target_include_directories(chordec_exp_cqt PUBLIC
+        includes/experimental
+        libs
+    )
+
+    add_library(chordec_exp_harmonic
+        src/experimental/harmonic_processing.cpp
+    )
+
+    target_include_directories(chordec_exp_harmonic PUBLIC
+        includes/experimental
+        libs
+    )
+
+    add_library(chordec_exp_nnls
+        src/experimental/nnls.cpp
+    )
+
+    target_include_directories(chordec_exp_nnls PUBLIC
+        includes/experimental
+        libs
+    )
+
+    add_library(chordec_exp_spectral
+        src/experimental/spectral_whitening.cpp
+    )
+
+    target_include_directories(chordec_exp_spectral PUBLIC
+        includes/experimental
+        libs
+    )
+
+endif()
+
+if(BUILD_EXPERIMENTAL)
+
+    target_link_libraries(chordec_core PRIVATE
+        chordec_exp_pipeline
+    )
+
+    chordec_configure_api(chordec_exp_chroma)
+    chordec_configure_api(chordec_exp_pipeline)
+    chordec_configure_api(chordec_exp_cqt)
+    chordec_configure_api(chordec_exp_harmonic)
+    chordec_configure_api(chordec_exp_nnls)
+    chordec_configure_api(chordec_exp_spectral)
+
+endif()
+
 # ==========================================
 # Main application
 # ==========================================
@@ -139,7 +249,7 @@ endif()
 # Testing
 # ==========================================
 
-if(BUILD_TESTS)
+if(BUILD_TEST)
 
     enable_testing()
 
