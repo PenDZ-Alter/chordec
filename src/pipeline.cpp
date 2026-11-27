@@ -4,7 +4,7 @@
 #include "pipeline.h"
 #include "chord.h"
 #include "params.h"
-#include "ca_math.h"
+#include "fft.h"
 
 PipelinePass1 runPass1(
     const CliOptions& options, 

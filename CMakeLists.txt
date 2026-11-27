@@ -81,8 +81,8 @@ target_include_directories(chordec_gen PUBLIC
     libs
 )
 
-add_library(chordec_math src/ca_math.cpp)
-target_include_directories(chordec_math PUBLIC
+add_library(chordec_fft src/fft.cpp)
+target_include_directories(chordec_fft PUBLIC
     includes
     libs
 )
@@ -112,7 +112,7 @@ target_include_directories(chordec_pipeline PUBLIC
 )
 
 target_link_libraries(chordec_pipeline PUBLIC
-    chordec_math
+    chordec_fft
     chordec_gen
 )
 
@@ -139,7 +139,7 @@ target_include_directories(chordec_core PUBLIC
 target_link_libraries(chordec_core PRIVATE
     chordec_parser
     chordec_gen
-    chordec_math
+    chordec_fft
     chordec_info
     chordec_export
     chordec_cli
@@ -148,7 +148,7 @@ target_link_libraries(chordec_core PRIVATE
 
 chordec_configure_api(chordec_parser)
 chordec_configure_api(chordec_gen)
-chordec_configure_api(chordec_math)
+chordec_configure_api(chordec_fft)
 chordec_configure_api(chordec_info)
 chordec_configure_api(chordec_export)
 chordec_configure_api(chordec_pipeline)
@@ -260,7 +260,7 @@ if(BUILD_TEST)
         target_link_libraries(${TEST_NAME} PRIVATE
             chordec_parser
             chordec_gen
-            chordec_math
+            chordec_fft
             chordec_info
             chordec_export
             chordec_pipeline

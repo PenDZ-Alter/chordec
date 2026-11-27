@@ -1,5 +1,5 @@
-#ifndef CA_MATH_H
-#define CA_MATH_H
+#ifndef FFT_H
+#define FFT_H
 
 #include <iostream>
 #include <vector>
